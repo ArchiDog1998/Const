@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SimpleRoslynHelper;
 using System.Collections.Immutable;
 using System.Linq.Expressions;
 

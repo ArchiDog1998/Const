@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SimpleRoslynHelper;
 using System.Collections.Immutable;
 
 namespace Const.SourceGenerators;
