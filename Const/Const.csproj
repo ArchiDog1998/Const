@@ -12,7 +12,7 @@
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<RepositoryUrl>https://github.com/ArchiDog1998/Const</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Version>0.9.3</Version>
+		<Version>0.9.4</Version>
     </PropertyGroup>
 
     <ItemGroup>
