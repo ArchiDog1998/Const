@@ -1,6 +1,6 @@
 ﻿namespace Const.Test.Type;
 
-internal class TestClass
+public class TestClass
 {
     public int Value { get; set; }
 
