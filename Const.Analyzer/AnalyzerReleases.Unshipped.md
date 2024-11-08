@@ -3,7 +3,7 @@
 
 ### New Rules
 
-| Rule ID | Category | Severity | Notes                    |
-|---------|----------|----------|--------------------------|
-| CT1001  | Usage    | Error    | DeclarationConstAnalyzer |
-| CT2001  | ToolBug  | Warning  | DeclarationConstAnalyzer |
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CT1001 | Usage | Error | DeclarationConstAnalyzer
+CT2001 | ToolBug | Warning | DeclarationConstAnalyzer

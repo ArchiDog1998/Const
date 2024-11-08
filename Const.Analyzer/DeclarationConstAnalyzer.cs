@@ -453,39 +453,26 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         while (exp is not SimpleNameSyntax)
         {
             deep++;
-            if (exp is MemberAccessExpressionSyntax member)
+
+            switch (exp)
             {
-                exp = member.Expression;
-            }
-            else if (containThis && exp is ThisExpressionSyntax thisExp)
-            {
-                if (thisExp.Parent is MemberAccessExpressionSyntax m)
-                {
-                    exp = m.Name;
-                    deep -= 2;
-                    isThisOrBase = true;
-                }
-                else
-                {
+                case MemberAccessExpressionSyntax member:
+                    exp = member.Expression;
                     break;
-                }
-            }
-            else if (containThis && exp is BaseExpressionSyntax baseExp)
-            {
-                if (baseExp.Parent is MemberAccessExpressionSyntax m)
-                {
-                    exp = m.Name;
-                    deep -= 2;
-                    isThisOrBase = true;
-                }
-                else
-                {
+                
+                case ThisExpressionSyntax:
+                case BaseExpressionSyntax:
+                    if (containThis && exp.Parent is MemberAccessExpressionSyntax m)
+                    {
+                        exp = m.Name;
+                        deep -= 2;
+                        isThisOrBase = true;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                     break;
-                }
-            }
-            else
-            {
-                break;
             }
         }
 
