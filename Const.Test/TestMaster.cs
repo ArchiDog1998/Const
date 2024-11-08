@@ -15,8 +15,7 @@ internal class TestMaster
         MembersMethod();
         MembersInMembersMethod();
     }
-
-
+    
     #region Using Members
     private void NothingMethod()
     {

@@ -9,9 +9,9 @@ internal static class RoslynExtensions
     /// </summary>
     /// <param name="s"></param>
     /// <returns></returns>
-    public static string GetFullMetadataName(this ISymbol s)
+    public static string GetFullMetadataName(this ISymbol? s)
     {
-        if (s == null || s is INamespaceSymbol)
+        if (s is null or INamespaceSymbol)
         {
             return string.Empty;
         }
@@ -45,20 +45,20 @@ internal static class RoslynExtensions
 
         return sb.ToString();
 
-        static bool IsRootNamespace(ISymbol symbol)
+        static bool IsRootNamespace(ISymbol? symbol)
         {
             return symbol is INamespaceSymbol s && s.IsGlobalNamespace;
         }
     }
 
-    private static string GetTypeSymbolName(this ISymbol symbol)
+    private static string GetTypeSymbolName(this ISymbol? symbol)
     {
         if (symbol is IArrayTypeSymbol arrayTypeSymbol) //Array
         {
             return arrayTypeSymbol.ElementType.GetFullMetadataName() + "[]";
         }
 
-        var str = symbol.MetadataName;
+        var str = symbol?.MetadataName ?? string.Empty;
         if (symbol is INamedTypeSymbol symbolType)//Generic
         {
             var strs = str.Split('`');
