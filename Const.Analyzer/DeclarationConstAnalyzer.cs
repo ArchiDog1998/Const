@@ -148,49 +148,49 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         return;
 
         (List<string> selfNames, List<string> memberNames, List<string> memberInMemberNames) GetParameterNames(
-            IMethodSymbol symbol)
+            IMethodSymbol method)
         {
-            List<string> selfNames = [], memberNames = [], memberInMemberNames = [];
+            List<string> mSelfNames = [], mMemberNames = [], mMemberInMemberNames = [];
 
-            for (var i = 0; i < symbol.Parameters.Length; i++)
+            for (var i = 0; i < method.Parameters.Length; i++)
             {
-                var paramName = symbol.Parameters[i].Name;
-                var type = GetConstTypeAttribute(symbol, i);
+                var paramName = method.Parameters[i].Name;
+                var type = GetConstTypeAttribute(method, i);
 
                 if (HasFlag(type, 1 << 0))
                 {
-                    selfNames.Add(paramName);
+                    mSelfNames.Add(paramName);
                 }
 
                 if (HasFlag(type, 1 << 1))
                 {
-                    memberNames.Add(paramName);
+                    mMemberNames.Add(paramName);
                 }
 
                 if (HasFlag(type, 1 << 2))
                 {
-                    memberInMemberNames.Add(paramName);
+                    mMemberInMemberNames.Add(paramName);
                 }
             }
 
-            return (selfNames, memberNames, memberInMemberNames);
+            return (mSelfNames, mMemberNames, mMemberInMemberNames);
         }
 
         void CheckOneLocalFunction(LocalFunctionStatementSyntax localFunction, IEnumerable<string> skipNames)
         {
-            var body = GetMethodBody(localFunction);
-            if (body is null) return;
-            skipNames = skipNames.Union(GetParameterNames(localFunction));
-            CheckAssignment(body, skipNames);
+            var localBody = GetMethodBody(localFunction);
+            if (localBody is null) return;
+            var addedSkipNames = skipNames.Union(GetLocalParameterNames(localFunction)).ToArray();
+            CheckAssignment(localBody, addedSkipNames);
 
-            foreach (var local in body.GetChildren<LocalFunctionStatementSyntax>())
+            foreach (var local in localBody.GetChildren<LocalFunctionStatementSyntax>())
             {
-                CheckOneLocalFunction(local, skipNames);
+                CheckOneLocalFunction(local, addedSkipNames);
             }
 
             return;
 
-            IEnumerable<string> GetParameterNames(LocalFunctionStatementSyntax statement)
+            IEnumerable<string> GetLocalParameterNames(LocalFunctionStatementSyntax statement)
             {
                 return statement.ParameterList.Parameters.Select(p => p.Identifier.Text.Trim());
             }
@@ -316,9 +316,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, byte type)
     {
         var localFunctions = GetLocalFunctions(context);
-        var localFunctionNames = localFunctions.Select(f => f.Name);
-        var cantLocalFunctionNames = localFunctions.Where(CantInvokeMethod).Select(s => s.Name);
-        var cantMethodsNames = AccessibleMethods(symbol.ContainingType).Where(CantInvokeMethod).Select(s => s.Name);
+        var localFunctionNames = localFunctions.Select(f => f.Name).ToArray();
+        var cantLocalFunctionNames = localFunctions.Where(CantInvokeMethod).Select(s => s.Name).ToArray();
+        var cantMethodsNames = AccessibleMethods(symbol.ContainingType).Where(CantInvokeMethod).Select(s => s.Name).ToArray();
 
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
@@ -393,9 +393,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        bool CantInvokeMethod(IMethodSymbol symbol)
+        bool CantInvokeMethod(IMethodSymbol methodSymbol)
         {
-            var methodType = GetConstTypeAttribute(symbol);
+            var methodType = GetConstTypeAttribute(methodSymbol);
             if (HasFlag(type, 1 << 0) && !HasFlag(methodType, 1 << 0)) return true;
             if (HasFlag(type, 1 << 1) && !HasFlag(methodType, 1 << 1)) return true;
             if (HasFlag(type, 1 << 2) && !HasFlag(methodType, 1 << 2)) return true;

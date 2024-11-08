@@ -6,9 +6,11 @@ public class MethodInvokeTest
 {
     public TestClass Property { get; set; } = new();
 
+    private readonly int it;
+
     private void MethodInMethodTest([Const(Type = ConstType.Self)]int i)
     {
-        i = 10;
+        it = 10;
         [Const(Type = ConstType.Self)]
         void Function([Const(Type = ConstType.Self)]int i)
         {
@@ -26,7 +28,6 @@ public class MethodInvokeTest
         {
  
         }
-        
     }
     
 
