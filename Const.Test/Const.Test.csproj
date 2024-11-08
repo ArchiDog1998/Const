@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Const.SourceGenerators\Const.SourceGenerators.csproj" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\Const.Analyzer\Const.Analyzer.csproj" OutputItemType="Analyzer" />
       <ProjectReference Include="..\Const\Const.csproj" />
     </ItemGroup>
 

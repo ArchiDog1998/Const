@@ -20,6 +20,6 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-        <None Include="..\Const.SourceGenerators\bin\$(Configuration)\netstandard2.0\Const.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="..\Const.Analyzer\bin\$(Configuration)\netstandard2.0\Const.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 </Project>

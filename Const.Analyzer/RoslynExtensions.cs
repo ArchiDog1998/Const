@@ -1,9 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
+using Microsoft.CodeAnalysis;
 
-namespace Const.SourceGenerators;
+namespace Const.Analyzer;
 internal static class RoslynExtensions
 {
     /// <summary>
