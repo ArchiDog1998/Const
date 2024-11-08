@@ -123,8 +123,8 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     {
         var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
         if (attr == null) return 0;
-        var type = attr?.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
-        return (byte?)type?.Value ?? byte.MaxValue;
+        var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
+        return (byte?)type.Value ?? byte.MaxValue;
     }
 
 
@@ -196,9 +196,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        void CheckAssignment(SyntaxNode body, IEnumerable<string> skipNames)
+        void CheckAssignment(SyntaxNode subBody, IEnumerable<string> skipNames)
         {
-            CheckChildren(context, body, false, (name, deep, isThis) =>
+            CheckChildren(context, subBody, false, (name, deep, _) =>
             {
                 var left = GetSyntaxName(name);
 
@@ -322,7 +322,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
-            var name = GetFirstAccessorNameInvoke(context, statement, true, out var deep, out var isThis);
+            var name = GetFirstAccessorNameInvoke(context, statement, true, out var isThis);
 
             if (name is null) continue;
 
@@ -347,9 +347,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         return;
 
         static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
-            InvocationExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+            InvocationExpressionSyntax assignment, bool containThis, out bool isThisOrBase)
         {
-            return GetFirstAccessorName(context, assignment.Expression, containThis, out deep, out isThisOrBase);
+            return GetFirstAccessorName(context, assignment.Expression, containThis, out _, out isThisOrBase);
         }
 
         static IMethodSymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
