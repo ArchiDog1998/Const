@@ -4,7 +4,46 @@ namespace Const.Test;
 
 internal class TestMaster
 {
+    public int I
+    {
+        [Const]
+        get
+        {
+            Property = new();
+            return 1;
+        }
+        private set
+        {
+            
+        }
+    }
+    
     public TestClass Property { get; set; } = new();
+
+
+    private void MethodInMethodTest([Const(Type = ConstType.Self)]int i)
+    {
+        i = 10;
+        [Const(Type = ConstType.Self)]
+        void Function([Const(Type = ConstType.Self)]int i)
+        {
+            i = 10;
+            Property.NothingMethod();
+            this.NothingMethod();
+            NothingMethod();
+            SelfMethod();
+            MembersMethod();
+            MembersInMembersMethod();
+        }
+
+        [Const(Type = ConstType.Self)]
+        void NothingMethod()
+        {
+ 
+        }
+        
+    }
+    
 
     [Const(Type = ConstType.Self)]
     private void MethodInvokeTestSelf()

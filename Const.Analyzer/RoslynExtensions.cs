@@ -75,14 +75,15 @@ internal static class RoslynExtensions
     /// </summary>
     /// <typeparam name="T">The node type</typeparam>
     /// <param name="node"></param>
-    /// <param name="removedNodes">the nodes need to removed.</param>
+    /// <param name="checkSkipNodes">Check the nodes.</param>
     /// <returns></returns>
-    public static IEnumerable<T> GetChildren<T>(this SyntaxNode node, params SyntaxNode[] removedNodes) where T : SyntaxNode
+    public static IEnumerable<T> GetChildren<T>(this SyntaxNode node, Predicate<SyntaxNode>? checkSkipNodes = null) where T : SyntaxNode
     {
-        if (removedNodes.Contains(node)) return [];
+        if (checkSkipNodes?.Invoke(node) ?? false) return [];
         if (node is T result) return [result];
-        return node.ChildNodes().SelectMany(n => n.GetChildren<T>(removedNodes));
+        return node.ChildNodes().SelectMany(n => n.GetChildren<T>(checkSkipNodes));
     }
+    
 
     /// <summary>
     /// Get the first parent with the specific <typeparamref name="T"/>.
