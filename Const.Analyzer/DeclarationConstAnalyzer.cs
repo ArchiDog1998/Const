@@ -28,10 +28,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor MemberDescriptor = new(DiagnosticId, Title,
         "Don't modify this member",
         Category, DiagnosticSeverity.Error, true);
-    
-    private static readonly DiagnosticDescriptor CantFindDescriptor = new ("CT2001", "Where is it?",
+
+    private static readonly DiagnosticDescriptor CantFindDescriptor = new("CT2001", "Where is it?",
         $"How to access this identifier name in Expression?", "ToolBug", DiagnosticSeverity.Warning,
-    true);
+        true);
 
     private static void ReportMember(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
     {
@@ -87,11 +87,39 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         var type = GetConstTypeAttribute(symbol);
         CheckMember(context, symbol, body, type);
         CheckMethod(context, symbol, body, type);
-        
+
         CheckParameter(context, symbol, body);
     }
-    
-    private static byte GetConstTypeAttribute(ISymbol? symbol)
+
+    private static byte GetConstTypeAttribute(IMethodSymbol symbol)
+    {
+        byte result = 0;
+
+        var methodSymbol = symbol;
+        do
+        {
+            result |= GetConstTypeAttributeRaw(methodSymbol);
+            methodSymbol = methodSymbol.OverriddenMethod;
+        } while (methodSymbol is not null);
+
+        return result;
+    }
+
+    private static byte GetConstTypeAttribute(IMethodSymbol symbol, int index)
+    {
+        byte result = 0;
+
+        var methodSymbol = symbol;
+        do
+        {
+            result |= GetConstTypeAttributeRaw(methodSymbol.Parameters[index]);
+            methodSymbol = methodSymbol.OverriddenMethod;
+        } while (methodSymbol is not null);
+
+        return result;
+    }
+
+    private static byte GetConstTypeAttributeRaw(ISymbol? symbol)
     {
         var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
         if (attr == null) return 0;
@@ -124,10 +152,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             List<string> selfNames = [], memberNames = [], memberInMemberNames = [];
 
-            foreach (var parameter in symbol.Parameters)
+            for (var i = 0; i < symbol.Parameters.Length; i++)
             {
-                var paramName = parameter.Name;
-                var type = GetConstTypeAttribute(parameter);
+                var paramName = symbol.Parameters[i].Name;
+                var type = GetConstTypeAttribute(symbol, i);
 
                 if (HasFlag(type, 1 << 0))
                 {
@@ -170,14 +198,11 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         void CheckAssignment(SyntaxNode body, IEnumerable<string> skipNames)
         {
-            foreach (var statement in body.GetChildren<AssignmentExpressionSyntax>(n =>
-                         n is LocalFunctionStatementSyntax))
+            CheckChildren(context, body, false, (name, deep, isThis) =>
             {
-                var name = GetFirstAccessorName(context, statement, false, out var deep, out _);
-                if (name is null) continue;
-
                 var left = GetSyntaxName(name);
-                if (skipNames.Contains(left)) continue;
+
+                if (skipNames.Contains(left)) return;
 
                 if (deep switch
                     {
@@ -188,7 +213,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 {
                     ReportParameter(context, name);
                 }
-            }
+            });
         }
     }
 
@@ -206,12 +231,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         var members = AccessibleFieldsAndProperties(symbol.ContainingType)
             .Select(s => s.Name);
-        
-        foreach (var statement in body.GetChildren<AssignmentExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
-        {
-            var name = GetFirstAccessorName(context, statement, true, out var deep, out var isThis);
-            if (name is null) continue;
 
+        CheckChildren(context, body, true, (name, deep, isThis) =>
+        {
             var left = GetSyntaxName(name);
 
             if (members.Contains(left)
@@ -225,7 +247,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 ReportMember(context, name);
             }
-        }
+        });
 
         return;
 
@@ -233,26 +255,74 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             return AccessibleMembers(typeSymbol, GetFieldsAnProperties);
 
-            static IEnumerable<ISymbol> GetFieldsAnProperties(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(
-                s =>
-                {
-                    if (s is IFieldSymbol) return true;
-                    if (s is IPropertySymbol) return true;
-                    return false;
-                });
+            static IEnumerable<ISymbol> GetFieldsAnProperties(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers()
+                .Where(
+                    s =>
+                    {
+                        if (s is IFieldSymbol) return true;
+                        if (s is IPropertySymbol) return true;
+                        return false;
+                    });
         }
     }
-    
+
+    private static void CheckChildren(SyntaxNodeAnalysisContext context, SyntaxNode body, bool containThis,
+        Action<SimpleNameSyntax, int, bool> operation)
+    {
+        foreach (var statement in body.GetChildren<AssignmentExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
+        {
+            var name = GetFirstAccessorNameAssignment(context, statement, containThis, out var deep, out var isThis);
+            if (name is null) continue;
+            operation(name, deep, isThis);
+            continue;
+
+            static SimpleNameSyntax? GetFirstAccessorNameAssignment(SyntaxNodeAnalysisContext context,
+                AssignmentExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+            {
+                return GetFirstAccessorName(context, assignment.Left, containThis, out deep, out isThisOrBase);
+            }
+        }
+
+        foreach (var statement in
+                 body.GetChildren<PostfixUnaryExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
+        {
+            var name = GetFirstAccessorNamePost(context, statement, containThis, out var deep, out var isThis);
+            if (name is null) continue;
+            operation(name, deep, isThis);
+            continue;
+
+            static SimpleNameSyntax? GetFirstAccessorNamePost(SyntaxNodeAnalysisContext context,
+                PostfixUnaryExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+            {
+                return GetFirstAccessorName(context, assignment.Operand, containThis, out deep, out isThisOrBase);
+            }
+        }
+
+        foreach (var statement in body.GetChildren<PrefixUnaryExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
+        {
+            var name = GetFirstAccessorNamePrefix(context, statement, containThis, out var deep, out var isThis);
+            if (name is null) continue;
+            operation(name, deep, isThis);
+            continue;
+
+            static SimpleNameSyntax? GetFirstAccessorNamePrefix(SyntaxNodeAnalysisContext context,
+                PrefixUnaryExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+            {
+                return GetFirstAccessorName(context, assignment.Operand, containThis, out deep, out isThisOrBase);
+            }
+        }
+    }
+
     private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, byte type)
     {
         var localFunctions = GetLocalFunctions(context);
         var localFunctionNames = localFunctions.Select(f => f.Name);
         var cantLocalFunctionNames = localFunctions.Where(CantInvokeMethod).Select(s => s.Name);
         var cantMethodsNames = AccessibleMethods(symbol.ContainingType).Where(CantInvokeMethod).Select(s => s.Name);
-        
+
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
-            var name = GetFirstAccessorName(context, statement.Expression, true, out var deep, out var isThis);
+            var name = GetFirstAccessorNameInvoke(context, statement, true, out var deep, out var isThis);
 
             if (name is null) continue;
 
@@ -275,22 +345,25 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         }
 
         return;
-        
-        static ISymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
+
+        static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
+            InvocationExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+        {
+            return GetFirstAccessorName(context, assignment.Expression, containThis, out deep, out isThisOrBase);
+        }
+
+        static IMethodSymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
         {
             return AccessibleMembers(typeSymbol, GetMethods);
 
-            static IEnumerable<ISymbol> GetMethods(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(s =>
-            {
-                if (s is IMethodSymbol) return true;
-                return false;
-            });
+            static IEnumerable<IMethodSymbol> GetMethods(INamedTypeSymbol typeSymbol) =>
+                typeSymbol.GetMembers().OfType<IMethodSymbol>();
         }
 
-        static ISymbol[] GetLocalFunctions(SyntaxNodeAnalysisContext context)
+        static IMethodSymbol[] GetLocalFunctions(SyntaxNodeAnalysisContext context)
         {
-            List<ISymbol> result = [];
-            
+            List<IMethodSymbol> result = [];
+
             var node = context.Node;
 
             var parent = node.Parent.GetParent<LocalFunctionStatementSyntax>();
@@ -305,7 +378,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 AddResult(baseMethodNode);
             }
-            
+
             return result.ToArray();
 
             void AddResult(SyntaxNode methodNode)
@@ -320,7 +393,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        bool CantInvokeMethod(ISymbol symbol)
+        bool CantInvokeMethod(IMethodSymbol symbol)
         {
             var methodType = GetConstTypeAttribute(symbol);
             if (HasFlag(type, 1 << 0) && !HasFlag(methodType, 1 << 0)) return true;
@@ -329,9 +402,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             return false;
         }
     }
-    
-    private static ISymbol[] AccessibleMembers(INamedTypeSymbol? typeSymbol,
-        Func<INamedTypeSymbol, IEnumerable<ISymbol>> getMembers)
+
+    private static T[] AccessibleMembers<T>(INamedTypeSymbol? typeSymbol,
+        Func<INamedTypeSymbol, IEnumerable<T>> getMembers) where T : ISymbol
     {
         if (typeSymbol == null) return [];
         var contains = typeSymbol.ContainingAssembly;
@@ -360,21 +433,16 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                         is Accessibility.Public
                         or Accessibility.Protected;
                 }
-            }), SymbolEqualityComparer.Default);
+            }));
 
             typeSymbol = typeSymbol.BaseType;
         }
 
         return allSymbols.ToArray();
     }
-    
+
     private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
-    
-    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context,
-        AssignmentExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
-    {
-        return GetFirstAccessorName(context, assignment.Left, containThis, out deep, out isThisOrBase);
-    }
+
 
     private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
         bool containThis, out int deep, out bool isThisOrBase)
