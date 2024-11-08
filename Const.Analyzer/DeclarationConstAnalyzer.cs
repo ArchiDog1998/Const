@@ -13,28 +13,25 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
     #region Diagnotic Warning
 
-    private const string DiagnosticId = "CT0001";
+    private const string DiagnosticId = "CT1001";
     private const string Title = "Don't modify it";
     private const string Category = "Usage";
 
-    private const string ParameterDescriptorDescription = "Don't modify this parameter";
-    private const string MethodDescriptorDescription = "Don't invoke this method";
-    private const string MemberDescriptorDescription = "Don't modify this member";
-
     private static readonly DiagnosticDescriptor ParameterDescriptor = new(DiagnosticId, Title,
-        ParameterDescriptorDescription,
-        Category, DiagnosticSeverity.Error, true,
-        ParameterDescriptorDescription);
+        "Don't modify this parameter",
+        Category, DiagnosticSeverity.Error, true);
 
     private static readonly DiagnosticDescriptor MethodDescriptor = new(DiagnosticId, Title,
-        MethodDescriptorDescription,
-        Category, DiagnosticSeverity.Error, true,
-        MethodDescriptorDescription);
+        "Don't invoke this method",
+        Category, DiagnosticSeverity.Error, true);
 
     private static readonly DiagnosticDescriptor MemberDescriptor = new(DiagnosticId, Title,
-        MemberDescriptorDescription,
-        Category, DiagnosticSeverity.Error, true,
-        MemberDescriptorDescription);
+        "Don't modify this member",
+        Category, DiagnosticSeverity.Error, true);
+    
+    private static readonly DiagnosticDescriptor CantFindDescriptor = new ("CT2001", "Where is it?",
+        $"How to access this identifier name in Expression?", "ToolBug", DiagnosticSeverity.Warning,
+    true);
 
     private static void ReportMember(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
     {
@@ -51,148 +48,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         context.ReportDiagnostic(Diagnostic.Create(MethodDescriptor, syntaxNode.GetLocation()));
     }
 
+    private static void ReportNotFound(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
+    {
+        context.ReportDiagnostic(Diagnostic.Create(CantFindDescriptor, syntaxNode.GetLocation()));
+    }
+
     public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        [ParameterDescriptor, MethodDescriptor, MemberDescriptor];
-
-    #endregion
-
-    #region Static
-
-    private static byte GetConstTypeAttribute(ISymbol? symbol)
-    {
-        var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
-        if (attr == null) return 0;
-        var type = attr?.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
-        return (byte?)type?.Value ?? byte.MaxValue;
-    }
-
-    private static ISymbol[] AccessibleFieldsAndProperties(INamedTypeSymbol? typeSymbol)
-    {
-        return AccessibleMembers(typeSymbol, GetFieldsAnProperties);
-
-        static IEnumerable<ISymbol> GetFieldsAnProperties(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(
-            s =>
-            {
-                if (s is IFieldSymbol) return true;
-                if (s is IPropertySymbol) return true;
-                return false;
-            });
-    }
-
-    private static ISymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
-    {
-        return AccessibleMembers(typeSymbol, GetMethods);
-
-        static IEnumerable<ISymbol> GetMethods(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(s =>
-        {
-            if (s is IMethodSymbol) return true;
-            return false;
-        });
-    }
-
-    private static ISymbol[] AccessibleMembers(INamedTypeSymbol? typeSymbol,
-        Func<INamedTypeSymbol, IEnumerable<ISymbol>> getMembers)
-    {
-        if (typeSymbol == null) return [];
-        var contains = typeSymbol.ContainingAssembly;
-
-        var allSymbols = getMembers(typeSymbol);
-
-        typeSymbol = typeSymbol.BaseType;
-
-        while (typeSymbol != null)
-        {
-            allSymbols = allSymbols.Union(getMembers(typeSymbol).Where(s =>
-            {
-                var access = s.DeclaredAccessibility;
-
-                if (s.ContainingAssembly.Equals(contains, SymbolEqualityComparer.Default))
-                {
-                    return access
-                        is Accessibility.Public
-                        or Accessibility.Protected
-                        or Accessibility.Internal
-                        or Accessibility.ProtectedAndInternal;
-                }
-                else
-                {
-                    return access
-                        is Accessibility.Public
-                        or Accessibility.Protected;
-                }
-            }), SymbolEqualityComparer.Default);
-
-            typeSymbol = typeSymbol.BaseType;
-        }
-
-        return allSymbols.ToArray();
-    }
-
-    private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
-
-    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context,
-        AssignmentExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
-    {
-        return GetFirstAccessorName(context, assignment.Left, containThis, out deep, out isThisOrBase);
-    }
-
-    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
-        bool containThis, out int deep, out bool isThisOrBase)
-    {
-        deep = 0;
-        isThisOrBase = false;
-
-        while (exp is not SimpleNameSyntax)
-        {
-            deep++;
-            if (exp is MemberAccessExpressionSyntax member)
-            {
-                exp = member.Expression;
-            }
-            else if (containThis && exp is ThisExpressionSyntax thisExp)
-            {
-                if (thisExp.Parent is MemberAccessExpressionSyntax m)
-                {
-                    exp = m.Name;
-                    deep -= 2;
-                    isThisOrBase = true;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            else if (containThis && exp is BaseExpressionSyntax baseExp)
-            {
-                if (baseExp.Parent is MemberAccessExpressionSyntax m)
-                {
-                    exp = m.Name;
-                    deep -= 2;
-                    isThisOrBase = true;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (exp is SimpleNameSyntax name) return name;
-
-        var desc = new DiagnosticDescriptor("CT101", "Where is it?",
-            $"How to access this identifier name in Expression?", "ToolBug", DiagnosticSeverity.Warning,
-            true);
-        var diagnostic = Diagnostic.Create(desc, exp.GetLocation());
-        context.ReportDiagnostic(diagnostic);
-
-        return null;
-    }
-
-    private static string GetSyntaxName(SimpleNameSyntax name) => name.Identifier.ToFullString().Trim();
+        [ParameterDescriptor, MethodDescriptor, MemberDescriptor, CantFindDescriptor];
 
     #endregion
 
@@ -228,6 +90,15 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         
         CheckParameter(context, symbol, body);
     }
+    
+    private static byte GetConstTypeAttribute(ISymbol? symbol)
+    {
+        var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
+        if (attr == null) return 0;
+        var type = attr?.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
+        return (byte?)type?.Value ?? byte.MaxValue;
+    }
+
 
     private static SyntaxNode? GetMethodBody(SyntaxNode? method) => method switch
     {
@@ -355,6 +226,21 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 ReportMember(context, name);
             }
         }
+
+        return;
+
+        static ISymbol[] AccessibleFieldsAndProperties(INamedTypeSymbol? typeSymbol)
+        {
+            return AccessibleMembers(typeSymbol, GetFieldsAnProperties);
+
+            static IEnumerable<ISymbol> GetFieldsAnProperties(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(
+                s =>
+                {
+                    if (s is IFieldSymbol) return true;
+                    if (s is IPropertySymbol) return true;
+                    return false;
+                });
+        }
     }
     
     private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, byte type)
@@ -389,6 +275,17 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         }
 
         return;
+        
+        static ISymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
+        {
+            return AccessibleMembers(typeSymbol, GetMethods);
+
+            static IEnumerable<ISymbol> GetMethods(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers().Where(s =>
+            {
+                if (s is IMethodSymbol) return true;
+                return false;
+            });
+        }
 
         static ISymbol[] GetLocalFunctions(SyntaxNodeAnalysisContext context)
         {
@@ -432,4 +329,103 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             return false;
         }
     }
+    
+    private static ISymbol[] AccessibleMembers(INamedTypeSymbol? typeSymbol,
+        Func<INamedTypeSymbol, IEnumerable<ISymbol>> getMembers)
+    {
+        if (typeSymbol == null) return [];
+        var contains = typeSymbol.ContainingAssembly;
+
+        var allSymbols = getMembers(typeSymbol);
+
+        typeSymbol = typeSymbol.BaseType;
+
+        while (typeSymbol != null)
+        {
+            allSymbols = allSymbols.Union(getMembers(typeSymbol).Where(s =>
+            {
+                var access = s.DeclaredAccessibility;
+
+                if (s.ContainingAssembly.Equals(contains, SymbolEqualityComparer.Default))
+                {
+                    return access
+                        is Accessibility.Public
+                        or Accessibility.Protected
+                        or Accessibility.Internal
+                        or Accessibility.ProtectedAndInternal;
+                }
+                else
+                {
+                    return access
+                        is Accessibility.Public
+                        or Accessibility.Protected;
+                }
+            }), SymbolEqualityComparer.Default);
+
+            typeSymbol = typeSymbol.BaseType;
+        }
+
+        return allSymbols.ToArray();
+    }
+    
+    private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
+    
+    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context,
+        AssignmentExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+    {
+        return GetFirstAccessorName(context, assignment.Left, containThis, out deep, out isThisOrBase);
+    }
+
+    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
+        bool containThis, out int deep, out bool isThisOrBase)
+    {
+        deep = 0;
+        isThisOrBase = false;
+
+        while (exp is not SimpleNameSyntax)
+        {
+            deep++;
+            if (exp is MemberAccessExpressionSyntax member)
+            {
+                exp = member.Expression;
+            }
+            else if (containThis && exp is ThisExpressionSyntax thisExp)
+            {
+                if (thisExp.Parent is MemberAccessExpressionSyntax m)
+                {
+                    exp = m.Name;
+                    deep -= 2;
+                    isThisOrBase = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else if (containThis && exp is BaseExpressionSyntax baseExp)
+            {
+                if (baseExp.Parent is MemberAccessExpressionSyntax m)
+                {
+                    exp = m.Name;
+                    deep -= 2;
+                    isThisOrBase = true;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (exp is SimpleNameSyntax name) return name;
+
+        ReportNotFound(context, exp);
+        return null;
+    }
+
+    private static string GetSyntaxName(SimpleNameSyntax name) => name.Identifier.ToFullString().Trim();
 }
