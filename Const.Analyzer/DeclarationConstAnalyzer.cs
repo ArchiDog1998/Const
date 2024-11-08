@@ -126,8 +126,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
         return (byte?)type.Value ?? byte.MaxValue;
     }
-
-
+    
     private static SyntaxNode? GetMethodBody(SyntaxNode? method) => method switch
     {
         LocalFunctionStatementSyntax func => func.Body as SyntaxNode ?? func.ExpressionBody,
@@ -202,18 +201,15 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 var left = GetSyntaxName(name);
 
-                if (skipNames.Contains(left)) return;
+                if (skipNames.Contains(left)) return false;
 
-                if (deep switch
-                    {
-                        0 => selfNames.Contains(left),
-                        1 => memberNames.Contains(left),
-                        _ => memberInMemberNames.Contains(left),
-                    })
+                return deep switch
                 {
-                    ReportParameter(context, name);
-                }
-            });
+                    0 => selfNames.Contains(left),
+                    1 => memberNames.Contains(left),
+                    _ => memberInMemberNames.Contains(left),
+                };
+            }, ReportParameter);
         }
     }
 
@@ -236,18 +232,15 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             var left = GetSyntaxName(name);
 
-            if (members.Contains(left)
+            return members.Contains(left)
                 && (isThis || !exceptions.Contains(left))
                 && deep switch
                 {
                     0 => HasFlag(type, 1 << 0),
                     1 => HasFlag(type, 1 << 1),
                     _ => HasFlag(type, 1 << 2),
-                })
-            {
-                ReportMember(context, name);
-            }
-        });
+                };
+        }, ReportMember);
 
         return;
 
@@ -256,59 +249,27 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             return AccessibleMembers(typeSymbol, GetFieldsAnProperties);
 
             static IEnumerable<ISymbol> GetFieldsAnProperties(INamedTypeSymbol typeSymbol) => typeSymbol.GetMembers()
-                .Where(
-                    s =>
-                    {
-                        if (s is IFieldSymbol) return true;
-                        if (s is IPropertySymbol) return true;
-                        return false;
-                    });
+                .Where(s => s is IFieldSymbol or IPropertySymbol);
         }
     }
 
     private static void CheckChildren(SyntaxNodeAnalysisContext context, SyntaxNode body, bool containThis,
-        Action<SimpleNameSyntax, int, bool> operation)
+        Func<SimpleNameSyntax, int, bool, bool> shouldReport, Action<SyntaxNodeAnalysisContext, SyntaxNode> reportAction)
     {
-        foreach (var statement in body.GetChildren<AssignmentExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
+        CheckChildrenSyntax<AssignmentExpressionSyntax>(s => s.Left);
+        CheckChildrenSyntax<PostfixUnaryExpressionSyntax>(s => s.Operand);
+        CheckChildrenSyntax<PrefixUnaryExpressionSyntax>(s => s.Operand);
+
+        return;
+
+        void CheckChildrenSyntax<T>(Func<T, ExpressionSyntax> getExpression) where T : SyntaxNode
         {
-            var name = GetFirstAccessorNameAssignment(context, statement, containThis, out var deep, out var isThis);
-            if (name is null) continue;
-            operation(name, deep, isThis);
-            continue;
-
-            static SimpleNameSyntax? GetFirstAccessorNameAssignment(SyntaxNodeAnalysisContext context,
-                AssignmentExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
+            foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax))
             {
-                return GetFirstAccessorName(context, assignment.Left, containThis, out deep, out isThisOrBase);
-            }
-        }
-
-        foreach (var statement in
-                 body.GetChildren<PostfixUnaryExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
-        {
-            var name = GetFirstAccessorNamePost(context, statement, containThis, out var deep, out var isThis);
-            if (name is null) continue;
-            operation(name, deep, isThis);
-            continue;
-
-            static SimpleNameSyntax? GetFirstAccessorNamePost(SyntaxNodeAnalysisContext context,
-                PostfixUnaryExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
-            {
-                return GetFirstAccessorName(context, assignment.Operand, containThis, out deep, out isThisOrBase);
-            }
-        }
-
-        foreach (var statement in body.GetChildren<PrefixUnaryExpressionSyntax>(n => n is LocalFunctionStatementSyntax))
-        {
-            var name = GetFirstAccessorNamePrefix(context, statement, containThis, out var deep, out var isThis);
-            if (name is null) continue;
-            operation(name, deep, isThis);
-            continue;
-
-            static SimpleNameSyntax? GetFirstAccessorNamePrefix(SyntaxNodeAnalysisContext context,
-                PrefixUnaryExpressionSyntax assignment, bool containThis, out int deep, out bool isThisOrBase)
-            {
-                return GetFirstAccessorName(context, assignment.Operand, containThis, out deep, out isThisOrBase);
+                var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep, out var isThis);
+                if (name is null) continue;
+                if (!shouldReport(name, deep, isThis)) continue;
+                reportAction.Invoke(context, name);
             }
         }
     }
