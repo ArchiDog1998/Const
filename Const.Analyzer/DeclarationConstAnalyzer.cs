@@ -49,7 +49,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
     private static ConstType GetConstTypeAttribute(IMethodSymbol symbol)
     {
-        byte result = 0;
+        ConstType result = 0;
 
         var methodSymbol = symbol;
         do
@@ -58,12 +58,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             methodSymbol = methodSymbol.OverriddenMethod;
         } while (methodSymbol is not null);
 
-        return (ConstType)result;
+        return result;
     }
 
-    private static byte GetConstTypeAttribute(IMethodSymbol symbol, int index)
+    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol, int index)
     {
-        byte result = 0;
+        ConstType result = 0;
 
         var methodSymbol = symbol;
         do
@@ -75,12 +75,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         return result;
     }
 
-    private static byte GetConstTypeAttributeRaw(ISymbol? symbol)
+    private static ConstType GetConstTypeAttributeRaw(ISymbol? symbol)
     {
         var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
         if (attr == null) return 0;
         var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
-        return (byte?)type.Value ?? byte.MaxValue;
+        var by = (byte?)type.Value ?? byte.MaxValue;
+        return (ConstType)by;
     }
     
     private static SyntaxNode? GetMethodBody(SyntaxNode? method) => method switch
@@ -112,17 +113,17 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 var paramName = method.Parameters[i].Name;
                 var type = GetConstTypeAttribute(method, i);
 
-                if (HasFlag(type, 1 << 0))
+                if (type.HasFlag(ConstType.Self))
                 {
                     mSelfNames.Add(paramName);
                 }
 
-                if (HasFlag(type, 1 << 1))
+                if (type.HasFlag(ConstType.Members))
                 {
                     mMemberNames.Add(paramName);
                 }
 
-                if (HasFlag(type, 1 << 2))
+                if (type.HasFlag(ConstType.MembersInMembers))
                 {
                     mMemberInMemberNames.Add(paramName);
                 }
@@ -225,6 +226,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep, out var isThis);
                 if (name is null) continue;
+                
                 if (!shouldReport(name, deep, isThis)) continue;
                 
                 reportAction.Invoke(context, name, deep switch
@@ -239,35 +241,15 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
     private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, ConstType type)
     {
-        var localFunctions = GetLocalFunctions(context);
-        var localFunctionNames = localFunctions.Select(f => f.Name).ToArray();
-        var cantLocalFunctionNames = localFunctions.Where(CantInvokeMethod).Select(s => s.Name).ToArray();
-        var cantMethodsNames = AccessibleMethods(symbol.ContainingType).Where(CantInvokeMethod).Select(s => s.Name).ToArray();
-
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
             var name = GetFirstAccessorNameInvoke(context, statement, true, out var isThis);
-
             if (name is null) continue;
 
-            var left = GetSyntaxName(name);
+            if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol) continue;
 
-            var methodName = context.SemanticModel.GetDeclaredSymbol(statement.Expression)?.Name ?? "No Name";
-
-            if (!isThis && localFunctionNames.Contains(left))
-            {
-                if (cantLocalFunctionNames.Contains(left))
-                {
-                    context.ReportMethod(name, type, methodName);
-                }
-            }
-            else
-            {
-                if (cantMethodsNames.Contains(left))
-                {
-                    context.ReportMethod(name, type, methodName);
-                }
-            }
+            if (!CantInvokeMethod(methodSymbol)) continue;
+            context.ReportMethod(name, type, methodSymbol.Name);
         }
 
         return;
@@ -276,47 +258,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             InvocationExpressionSyntax assignment, bool containThis, out bool isThisOrBase)
         {
             return GetFirstAccessorName(context, assignment.Expression, containThis, out _, out isThisOrBase);
-        }
-
-        static IMethodSymbol[] AccessibleMethods(INamedTypeSymbol? typeSymbol)
-        {
-            return AccessibleMembers(typeSymbol, GetMethods);
-
-            static IEnumerable<IMethodSymbol> GetMethods(INamedTypeSymbol typeSymbol) =>
-                typeSymbol.GetMembers().OfType<IMethodSymbol>();
-        }
-
-        static IMethodSymbol[] GetLocalFunctions(SyntaxNodeAnalysisContext context)
-        {
-            List<IMethodSymbol> result = [];
-
-            var node = context.Node;
-
-            var parent = node.Parent.GetParent<LocalFunctionStatementSyntax>();
-
-            while (parent is not null)
-            {
-                AddResult(parent);
-                parent = parent.Parent.GetParent<LocalFunctionStatementSyntax>();
-            }
-
-            if (node.Parent.GetParent<BaseMethodDeclarationSyntax>() is { } baseMethodNode)
-            {
-                AddResult(baseMethodNode);
-            }
-
-            return result.ToArray();
-
-            void AddResult(SyntaxNode methodNode)
-            {
-                foreach (var local in methodNode.GetChildren<LocalFunctionStatementSyntax>())
-                {
-                    if (result.Any(s => s.Name.Trim() == local.Identifier.Text.Trim())) continue;
-                    var func = context.SemanticModel.GetDeclaredSymbol(local);
-                    if (func is null) continue;
-                    result.Add(func);
-                }
-            }
         }
 
         bool CantInvokeMethod(IMethodSymbol methodSymbol)

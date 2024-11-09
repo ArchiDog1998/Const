@@ -57,7 +57,7 @@ public static class DiagnosticExtensions
 #if DEBUG
     private static readonly DiagnosticDescriptor DebugMessageDescriptor =  
 #pragma warning disable RS2000
-        new("CT2000", "Debug Message", "{0}", "Tool", DiagnosticSeverity.Warning, true);
+        new("CT2000", "Debug Message", "{1}", "Tool", DiagnosticSeverity.Warning, true);
 #pragma warning restore RS2000
     
     public static void ReportDebugMessage(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, string message)
