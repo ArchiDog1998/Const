@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 
 namespace Const.Analyzer;
+
 internal static class RoslynExtensions
 {
     /// <summary>
@@ -83,19 +84,4 @@ internal static class RoslynExtensions
         if (node is T result) return [result];
         return node.ChildNodes().SelectMany(n => n.GetChildren<T>(checkSkipNodes));
     }
-    
-
-    /// <summary>
-    /// Get the first parent with the specific <typeparamref name="T"/>.
-    /// </summary>
-    /// <typeparam name="T">The node type</typeparam>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    public static T? GetParent<T>(this SyntaxNode? node) where T : SyntaxNode
-    {
-        if (node == null) return null;
-        if (node is T result) return result;
-        return GetParent<T>(node.Parent);
-    }
-
 }

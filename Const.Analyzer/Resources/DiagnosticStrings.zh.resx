@@ -27,12 +27,24 @@
         <value>请不要调用这个方法</value>
     </data>
     <data name="MethodDescriptorMessage" xml:space="preserve">
-        <value>你不能调用函数{2}，因为你已经将这个方法或者{0}设置为Const.{1}了。</value>
+        <value>你不能调用函数{0}，因为你已经将这个方法设置为Const.{1}了。</value>
     </data>
     <data name="CantFindDescriptorTittle" xml:space="preserve">
         <value>它的名字呢？</value>
     </data>
     <data name="CantFindDescriptorMessage" xml:space="preserve">
         <value>如何获得这个表达式的名字呢？</value>
+    </data>
+    <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
+        <value>请不要调用这个参数的这个方法</value>
+    </data>
+    <data name="MemberInvokeDescriptorTittle" xml:space="preserve">
+        <value>请不要调用这个成员的这个方法</value>
+    </data>
+    <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{2}，因为你已经将这个方法设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
+    </data>
+    <data name="ParameterInvokeDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{2}，因为你已经将参数{0}设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
     </data>
 </root>

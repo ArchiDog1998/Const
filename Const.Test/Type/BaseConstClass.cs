@@ -7,6 +7,12 @@ public class BaseConstClass
 
     }
 
+    [Const(Type = ConstType.Self | ConstType.Members | ConstType.MembersInMembers)]
+    public void SelfStrictMethod()
+    {
+
+    }
+    
     [Const(Type = ConstType.Self)]
     public void SelfMethod()
     {
@@ -15,6 +21,12 @@ public class BaseConstClass
 
     [Const(Type = ConstType.Members)]
     public void MembersMethod()
+    {
+
+    }
+    
+    [Const(Type = ConstType.Members |  ConstType.MembersInMembers)]
+    public void MembersStrictMethod()
     {
 
     }

@@ -96,7 +96,25 @@ namespace Const.Analyzer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You cannot invoke method &apos;{2}&apos;, because you have set this method or &apos;{0}&apos; to Const.{1}..
+        ///   Looks up a localized string similar to You cannot invoke method &apos;{2}&apos;, because you have set this method to Const.{1}. You can try to modify the Const Attribute in &apos;{2}&apos;..
+        /// </summary>
+        internal static string MemberInvokeDescriptorMessage {
+            get {
+                return ResourceManager.GetString("MemberInvokeDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t invoke this member&apos;s method.
+        /// </summary>
+        internal static string MemberInvokeDescriptorTittle {
+            get {
+                return ResourceManager.GetString("MemberInvokeDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot invoke method &apos;{0}&apos;, because you have set this method to Const.{1}..
         /// </summary>
         internal static string MethodDescriptorMessage {
             get {
@@ -128,6 +146,24 @@ namespace Const.Analyzer {
         internal static string ParameterDescriptorTittle {
             get {
                 return ResourceManager.GetString("ParameterDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You cannot invoke method &apos;{2}&apos;, because you have set the parameter &apos;{0}&apos; to Const.{1}. You can try to modify the Const Attribute in &apos;{2}&apos;..
+        /// </summary>
+        internal static string ParameterInvokeDescriptorMessage {
+            get {
+                return ResourceManager.GetString("ParameterInvokeDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t invoke this parameter&apos;s method.
+        /// </summary>
+        internal static string ParameterInvokeDescriptorTittle {
+            get {
+                return ResourceManager.GetString("ParameterInvokeDescriptorTittle", resourceCulture);
             }
         }
     }

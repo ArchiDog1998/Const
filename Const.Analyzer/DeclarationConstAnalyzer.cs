@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Net.Mime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -35,14 +36,11 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         var body = GetMethodBody(context.Node);
         if (body is null) return;
 
-        if (model.GetDeclaredSymbol(context.Node) is not IMethodSymbol symbol)
-        {
-            return;
-        }
+        if (model.GetDeclaredSymbol(context.Node) is not IMethodSymbol symbol) return;
 
         var type = GetConstTypeAttribute(symbol);
         CheckMember(context, symbol, body, type);
-        CheckMethod(context, symbol, body, type);
+        CheckMethod(context, body, type);
 
         CheckParameter(context, symbol, body);
     }
@@ -166,7 +164,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     1 => memberNames.Contains(left),
                     _ => memberInMemberNames.Contains(left),
                 };
-            }, DiagnosticExtensions.ReportParameter);
+            }, DiagnosticExtensions.ReportParameter, DiagnosticExtensions.ReportParameterInvoke);
         }
     }
 
@@ -198,7 +196,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     1 => type.HasFlag(ConstType.Members),
                     _ => type.HasFlag(ConstType.MembersInMembers),
                 };
-        }, DiagnosticExtensions.ReportMember);
+        }, DiagnosticExtensions.ReportMember, DiagnosticExtensions.ReportMemberInvoke);
 
         return;
 
@@ -212,11 +210,14 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     }
 
     private static void CheckChildren(SyntaxNodeAnalysisContext context, SyntaxNode body, bool containThis,
-        Func<SimpleNameSyntax, int, bool, bool> shouldReport, Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType> reportAction)
+        Func<SimpleNameSyntax, int, bool, bool> shouldReport, 
+        Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType> reportAction,
+        Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType, string> reportMethodAction)
     {
         CheckChildrenSyntax<AssignmentExpressionSyntax>(s => s.Left);
         CheckChildrenSyntax<PostfixUnaryExpressionSyntax>(s => s.Operand);
         CheckChildrenSyntax<PrefixUnaryExpressionSyntax>(s => s.Operand);
+        CheckChildrenSyntax<InvocationExpressionSyntax>(s => s.Expression);
 
         return;
 
@@ -226,39 +227,72 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep, out var isThis);
                 if (name is null) continue;
+
+                var methodName = string.Empty;
+                if (statement is InvocationExpressionSyntax invocation
+                    && context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol is
+                        IMethodSymbol methodSymbol)
+                {
+                    methodName = methodSymbol.Name;
+                    deep += GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
+                }
+                
+                if (deep < 0) continue;
                 
                 if (!shouldReport(name, deep, isThis)) continue;
-                
-                reportAction.Invoke(context, name, deep switch
+
+                var type = deep switch
                 {
                     0 => ConstType.Self,
                     1 => ConstType.Members,
                     _ => ConstType.MembersInMembers,
-                });
+                };
+
+                if (string.IsNullOrEmpty(methodName))
+                {
+                    reportAction(context, name, type);
+                }
+                else
+                {
+                    reportMethodAction(context, name, type, methodName);
+                }
+            }
+            
+            return;
+            
+            int GetConstTypeAddition(ConstType type)
+            {
+                if (!type.HasFlag(ConstType.MembersInMembers))
+                {
+                    return 3;
+                }
+                if (!type.HasFlag(ConstType.Members))
+                {
+                    return 2;
+                }
+                if (!type.HasFlag(ConstType.Self))
+                {
+                    return 1;
+                }
+                return int.MinValue;
             }
         }
     }
 
-    private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, ConstType type)
+    private static void CheckMethod(SyntaxNodeAnalysisContext context, SyntaxNode body, ConstType type)
     {
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
-            var name = GetFirstAccessorNameInvoke(context, statement, true, out var isThis);
+            var name = GetFirstAccessorNameInvoke(context, statement, true, out _);
             if (name is null) continue;
 
             if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol) continue;
 
             if (!CantInvokeMethod(methodSymbol)) continue;
-            context.ReportMethod(name, type, methodSymbol.Name);
+            context.ReportMethod(name, type);
         }
 
         return;
-
-        static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
-            InvocationExpressionSyntax assignment, bool containThis, out bool isThisOrBase)
-        {
-            return GetFirstAccessorName(context, assignment.Expression, containThis, out _, out isThisOrBase);
-        }
 
         bool CantInvokeMethod(IMethodSymbol methodSymbol)
         {
@@ -311,6 +345,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     }
 
     private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
+    
+    private static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
+        InvocationExpressionSyntax assignment, bool containThis, out int deep)
+    {
+        return GetFirstAccessorName(context, assignment.Expression, containThis, out deep, out _);
+    }
     
     private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
         bool containThis, out int deep, out bool isThisOrBase)

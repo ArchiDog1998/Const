@@ -9,6 +9,7 @@ public static class DiagnosticExtensions
     public static ImmutableArray<DiagnosticDescriptor> Descriptors =>
     [
         ParameterDescriptor, MemberDescriptor, MethodDescriptor,
+        ParameterInvokeDescriptor, MemberInvokeDescriptor,
         CantFindDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
@@ -32,14 +33,26 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor MethodDescriptor = CreateUsageErrorDescriptor(3,
         nameof(DiagnosticStrings.MethodDescriptorTittle), nameof(DiagnosticStrings.MethodDescriptorMessage));
     
+    private static readonly DiagnosticDescriptor ParameterInvokeDescriptor = CreateUsageErrorDescriptor(4,
+        nameof(DiagnosticStrings.ParameterInvokeDescriptorTittle), nameof(DiagnosticStrings.ParameterInvokeDescriptorMessage));
+    
+    private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor(5,
+        nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
+    
     public static void ReportParameter(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type)
         => ReportDescriptor(context, ParameterDescriptor, syntaxNode, type);
     
     public static void ReportMember(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type)
         => ReportDescriptor(context, MemberDescriptor, syntaxNode, type);
         
-    public static void ReportMethod(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type, string methodName)
-        => ReportDescriptor(context, MethodDescriptor, syntaxNode, type, methodName);
+    public static void ReportMethod(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type)
+        => ReportDescriptor(context, MethodDescriptor, syntaxNode, type);
+    
+    public static void ReportParameterInvoke(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type, string methodName)
+        => ReportDescriptor(context, ParameterInvokeDescriptor, syntaxNode, type, methodName);
+    
+    public static void ReportMemberInvoke(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type, string methodName)
+        => ReportDescriptor(context, MemberInvokeDescriptor, syntaxNode, type, methodName);
 
     #endregion
 

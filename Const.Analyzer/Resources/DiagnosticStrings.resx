@@ -28,7 +28,7 @@
         <value>Don't invoke this method</value>
     </data>
     <data name="MethodDescriptorMessage" xml:space="preserve">
-        <value>You cannot invoke method '{2}', because you have set this method or '{0}' to Const.{1}.</value>
+        <value>You cannot invoke method '{0}', because you have set this method to Const.{1}.</value>
     </data>
     <data name="MemberDescriptorTittle" xml:space="preserve">
         <value>Don't modify this member</value>
@@ -41,5 +41,17 @@
     </data>
     <data name="CantFindDescriptorMessage" xml:space="preserve">
         <value>How to access this identifier name in Expression?</value>
+    </data>
+    <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
+        <value>Don't invoke this parameter's method</value>
+    </data>
+    <data name="ParameterInvokeDescriptorMessage" xml:space="preserve">
+        <value>You cannot invoke method '{2}', because you have set the parameter '{0}' to Const.{1}. You can try to modify the Const Attribute in '{2}'.</value>
+    </data>
+    <data name="MemberInvokeDescriptorTittle" xml:space="preserve">
+        <value>Don't invoke this member's method</value>
+    </data>
+    <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
+        <value>You cannot invoke method '{2}', because you have set this method to Const.{1}. You can try to modify the Const Attribute in '{2}'.</value>
     </data>
 </root>

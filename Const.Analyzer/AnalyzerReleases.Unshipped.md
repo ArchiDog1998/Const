@@ -5,5 +5,9 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CT1001 | Usage | Error | DeclarationConstAnalyzer
-CT2001 | ToolBug | Warning | DeclarationConstAnalyzer
+CT1001 | Usage | Error | Don't modify this parameter
+CT1002 | Usage | Error | Don't modify this member
+CT1003 | Usage | Error | Don't invoke this method
+CT1004 | Usage | Error | Don't invoke this parameter's method
+CT1005 | Usage | Error | Don't invoke this member's method
+CT2001 | Tool | Warning | Where is its name?
