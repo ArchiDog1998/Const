@@ -2,9 +2,9 @@
 
 public class BaseConstClass
 {
-    public void NothingMethod()
+    public int NothingMethod()
     {
-
+        return 0;
     }
 
     [Const(Type = ConstType.Self | ConstType.Members | ConstType.MembersInMembers)]

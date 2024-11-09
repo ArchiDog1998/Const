@@ -13,7 +13,7 @@ public class MethodInvokeTest : BaseConstClass
         {
             i = 10;
             Property.NothingMethod();
-            this.NothingMethod();
+            var a = this.NothingMethod();
             NothingMethod();
             SelfMethod();
             MembersMethod();

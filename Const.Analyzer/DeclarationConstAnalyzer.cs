@@ -14,7 +14,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     
     public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticExtensions.Descriptors;
     
-
     public sealed override void Initialize(AnalysisContext context)
     {
         context.EnableConcurrentExecution();
@@ -227,6 +226,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             {
                 var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep, out var isThis);
                 if (name is null) continue;
+                
+                var nameSymbol = context.SemanticModel.GetSymbolInfo(name).Symbol;
+                if (nameSymbol is not IPropertySymbol and not IFieldSymbol and not IParameterSymbol) continue;
 
                 var methodName = string.Empty;
                 if (statement is InvocationExpressionSyntax invocation
@@ -234,7 +236,16 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                         IMethodSymbol methodSymbol)
                 {
                     methodName = methodSymbol.Name;
-                    deep += GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
+                    if (!methodSymbol.ContainingAssembly.Equals(nameSymbol.ContainingAssembly,
+                            SymbolEqualityComparer.Default))
+                    {
+                        // Skip this method. We can't edit it.
+                        continue;
+                    }
+                    else
+                    {
+                        deep += GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
+                    }
                 }
                 
                 if (deep < 0) continue;
