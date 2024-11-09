@@ -2,7 +2,7 @@
 
 namespace Const.Test;
 
-public class MethodInvokeTest
+public class MethodInvokeTest : BaseConstClass
 {
     public TestClass Property { get; set; } = new();
 
@@ -38,29 +38,4 @@ public class MethodInvokeTest
         MembersInMembersMethod();
     }
 
-    
-    #region Using Members
-    private void NothingMethod()
-    {
-
-    }
-
-    [Const(Type = ConstType.Self)]
-    private void SelfMethod()
-    {
-
-    }
-
-    [Const(Type = ConstType.Members)]
-    private void MembersMethod()
-    {
-
-    }
-
-    [Const(Type = ConstType.MembersInMembers)]
-    private void MembersInMembersMethod()
-    {
-
-    }
-    #endregion
 }

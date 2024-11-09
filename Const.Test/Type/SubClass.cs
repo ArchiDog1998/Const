@@ -1,6 +1,6 @@
 ﻿namespace Const.Test.Type;
 
-public class SubClass
+public class SubClass : BaseConstClass
 {
     public int Value { get; set; }
 }
