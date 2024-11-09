@@ -1,7 +1,7 @@
 ﻿namespace Const.Analyzer;
 
 [Flags]
-internal enum ConstType : byte
+public enum ConstType : byte
 {
     None,
     Self = 1 << 0,

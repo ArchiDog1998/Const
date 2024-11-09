@@ -2,25 +2,25 @@
 
 public class BaseConstClass
 {
-    private void NothingMethod()
+    public void NothingMethod()
     {
 
     }
 
     [Const(Type = ConstType.Self)]
-    private void SelfMethod()
+    public void SelfMethod()
     {
 
     }
 
     [Const(Type = ConstType.Members)]
-    private void MembersMethod()
+    public void MembersMethod()
     {
 
     }
 
     [Const(Type = ConstType.MembersInMembers)]
-    private void MembersInMembersMethod()
+    public void MembersInMembersMethod()
     {
 
     }

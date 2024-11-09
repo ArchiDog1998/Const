@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ParameterDescriptorTittle" xml:space="preserve">
+        <value>Don't modify this parameter</value>
+    </data>
+    <data name="ParameterDescriptorMessage" xml:space="preserve">
+        <value>You cannot modify parameter '{0}', because you have set it to Const.{1}.</value>
+    </data>
+    <data name="MethodDescriptorTittle" xml:space="preserve">
+        <value>Don't invoke this method</value>
+    </data>
+    <data name="MethodDescriptorMessage" xml:space="preserve">
+        <value>You cannot invoke method '{2}', because you have set this method or '{0}' to Const.{1}.</value>
+    </data>
+    <data name="MemberDescriptorTittle" xml:space="preserve">
+        <value>Don't modify this member</value>
+    </data>
+    <data name="MemberDescriptorMessage" xml:space="preserve">
+        <value>You cannot modify member '{0}', because you have set this method to Const.{1}.</value>
+    </data>
+    <data name="CantFindDescriptorTittle" xml:space="preserve">
+        <value>Where is its name?</value>
+    </data>
+    <data name="CantFindDescriptorMessage" xml:space="preserve">
+        <value>How to access this identifier name in Expression?</value>
+    </data>
+</root>

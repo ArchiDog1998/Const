@@ -10,57 +10,9 @@ namespace Const.Analyzer;
 public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 {
     private const string ConstName = "Const.ConstAttribute";
-
-    #region Diagnotic Warning
-
-    private const string DiagnosticId = "CT1001";
-    private const string Title = "Don't modify it";
-    private const string Category = "Usage";
-
-    private static readonly DiagnosticDescriptor ParameterDescriptor = new(DiagnosticId, Title,
-        "Don't modify this parameter",
-        Category, DiagnosticSeverity.Error, true);
-
-    private static readonly DiagnosticDescriptor MethodDescriptor = new(DiagnosticId, Title,
-        "Don't invoke this method",
-        Category, DiagnosticSeverity.Error, true);
-
-    private static readonly DiagnosticDescriptor MemberDescriptor = new(DiagnosticId, Title,
-        "Don't modify this member",
-        Category, DiagnosticSeverity.Error, true);
-
-    private static readonly DiagnosticDescriptor CantFindDescriptor = new("CT2001", "Where is it?",
-        $"How to access this identifier name in Expression?", "ToolBug", DiagnosticSeverity.Warning,
-        true);
-
-#if DEBUG
     
-#endif
-
-    private static void ReportMember(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
-    {
-        context.ReportDiagnostic(Diagnostic.Create(MemberDescriptor, syntaxNode.GetLocation()));
-    }
-
-    private static void ReportParameter(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
-    {
-        context.ReportDiagnostic(Diagnostic.Create(ParameterDescriptor, syntaxNode.GetLocation()));
-    }
-
-    private static void ReportMethod(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
-    {
-        context.ReportDiagnostic(Diagnostic.Create(MethodDescriptor, syntaxNode.GetLocation()));
-    }
-
-    private static void ReportNotFound(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
-    {
-        context.ReportDiagnostic(Diagnostic.Create(CantFindDescriptor, syntaxNode.GetLocation()));
-    }
-
-    public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        [ParameterDescriptor, MethodDescriptor, MemberDescriptor, CantFindDescriptor];
-
-    #endregion
+    public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticExtensions.Descriptors;
+    
 
     public sealed override void Initialize(AnalysisContext context)
     {
@@ -213,7 +165,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     1 => memberNames.Contains(left),
                     _ => memberInMemberNames.Contains(left),
                 };
-            }, ReportParameter);
+            }, DiagnosticExtensions.ReportParameter);
         }
     }
 
@@ -245,7 +197,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     1 => type.HasFlag(ConstType.Members),
                     _ => type.HasFlag(ConstType.MembersInMembers),
                 };
-        }, ReportMember);
+        }, DiagnosticExtensions.ReportMember);
 
         return;
 
@@ -259,7 +211,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     }
 
     private static void CheckChildren(SyntaxNodeAnalysisContext context, SyntaxNode body, bool containThis,
-        Func<SimpleNameSyntax, int, bool, bool> shouldReport, Action<SyntaxNodeAnalysisContext, SyntaxNode> reportAction)
+        Func<SimpleNameSyntax, int, bool, bool> shouldReport, Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType> reportAction)
     {
         CheckChildrenSyntax<AssignmentExpressionSyntax>(s => s.Left);
         CheckChildrenSyntax<PostfixUnaryExpressionSyntax>(s => s.Operand);
@@ -274,7 +226,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep, out var isThis);
                 if (name is null) continue;
                 if (!shouldReport(name, deep, isThis)) continue;
-                reportAction.Invoke(context, name);
+                
+                reportAction.Invoke(context, name, deep switch
+                {
+                    0 => ConstType.Self,
+                    1 => ConstType.Members,
+                    _ => ConstType.MembersInMembers,
+                });
             }
         }
     }
@@ -294,18 +252,20 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
             var left = GetSyntaxName(name);
 
+            var methodName = context.SemanticModel.GetDeclaredSymbol(statement.Expression)?.Name ?? "No Name";
+
             if (!isThis && localFunctionNames.Contains(left))
             {
                 if (cantLocalFunctionNames.Contains(left))
                 {
-                    ReportMethod(context, name);
+                    context.ReportMethod(name, type, methodName);
                 }
             }
             else
             {
                 if (cantMethodsNames.Contains(left))
                 {
-                    ReportMethod(context, name);
+                    context.ReportMethod(name, type, methodName);
                 }
             }
         }
@@ -445,7 +405,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         if (exp is SimpleNameSyntax name) return name;
 
-        ReportNotFound(context, exp);
+        context.ReportCantFind(exp);
         return null;
     }
 
