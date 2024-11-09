@@ -33,6 +33,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         $"How to access this identifier name in Expression?", "ToolBug", DiagnosticSeverity.Warning,
         true);
 
+#if DEBUG
+    
+#endif
+
     private static void ReportMember(SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
     {
         context.ReportDiagnostic(Diagnostic.Create(MemberDescriptor, syntaxNode.GetLocation()));
@@ -91,7 +95,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         CheckParameter(context, symbol, body);
     }
 
-    private static byte GetConstTypeAttribute(IMethodSymbol symbol)
+    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol)
     {
         byte result = 0;
 
@@ -102,7 +106,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             methodSymbol = methodSymbol.OverriddenMethod;
         } while (methodSymbol is not null);
 
-        return result;
+        return (ConstType)result;
     }
 
     private static byte GetConstTypeAttribute(IMethodSymbol symbol, int index)
@@ -221,7 +225,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     /// <param name="symbol"></param>
     /// <param name="body"></param>
     /// <param name="type"></param>
-    private static void CheckMember(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, byte type)
+    private static void CheckMember(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, ConstType type)
     {
         var exceptions = symbol.Parameters.Select(p => p.Name);
 
@@ -232,13 +236,14 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             var left = GetSyntaxName(name);
 
+            
             return members.Contains(left)
                 && (isThis || !exceptions.Contains(left))
                 && deep switch
                 {
-                    0 => HasFlag(type, 1 << 0),
-                    1 => HasFlag(type, 1 << 1),
-                    _ => HasFlag(type, 1 << 2),
+                    0 => type.HasFlag(ConstType.Self),
+                    1 => type.HasFlag(ConstType.Members),
+                    _ => type.HasFlag(ConstType.MembersInMembers),
                 };
         }, ReportMember);
 
@@ -274,7 +279,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, byte type)
+    private static void CheckMethod(SyntaxNodeAnalysisContext context, IMethodSymbol symbol, SyntaxNode body, ConstType type)
     {
         var localFunctions = GetLocalFunctions(context);
         var localFunctionNames = localFunctions.Select(f => f.Name).ToArray();
@@ -357,10 +362,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         bool CantInvokeMethod(IMethodSymbol methodSymbol)
         {
             var methodType = GetConstTypeAttribute(methodSymbol);
-            if (HasFlag(type, 1 << 0) && !HasFlag(methodType, 1 << 0)) return true;
-            if (HasFlag(type, 1 << 1) && !HasFlag(methodType, 1 << 1)) return true;
-            if (HasFlag(type, 1 << 2) && !HasFlag(methodType, 1 << 2)) return true;
+            if (CheckFlag(ConstType.Self)) return true;
+            if (CheckFlag(ConstType.Members)) return true;
+            if (CheckFlag(ConstType.MembersInMembers)) return true;
             return false;
+
+            bool CheckFlag(ConstType item) => type.HasFlag(item) && !methodType.HasFlag(item);
         }
     }
 
@@ -403,8 +410,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     }
 
     private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
-
-
+    
     private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
         bool containThis, out int deep, out bool isThisOrBase)
     {
