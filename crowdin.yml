@@ -1,0 +1,3 @@
+files:
+  - source: Const.Analyzer/Resources/DiagnosticStrings.resx
+    translation: /Const.Analyzer/Resources/DiagnosticStrings.%two_letters_code%.resx
