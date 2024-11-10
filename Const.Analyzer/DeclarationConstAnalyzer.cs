@@ -240,6 +240,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                         IMethodSymbol methodSymbol)
                 {
                     methodName = methodSymbol.Name;
+                    //TODO: it is better to check if the assembly has the dependency about this assembly.
                     if (!methodSymbol.ContainingAssembly.Equals(nameSymbol.ContainingAssembly,
                             SymbolEqualityComparer.Default))
                     {
