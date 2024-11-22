@@ -1,50 +1,56 @@
-﻿<root>
-    <resheader name="resmimetype">
-        <value>text/microsoft-resx</value>
-    </resheader>
-    <resheader name="version">
-        <value>1.3</value>
-    </resheader>
-    <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <data name="ParameterDescriptorTittle" xml:space="preserve">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ParameterDescriptorTittle" xml:space="preserve">
         <value>请不要修改这个参数</value>
     </data>
-    <data name="ParameterDescriptorMessage" xml:space="preserve">
+  <data name="ParameterDescriptorMessage" xml:space="preserve">
         <value>你不能修改参数{0}，因为你已经将他设置为Const.{1}了。</value>
     </data>
-    <data name="MemberDescriptorMessage" xml:space="preserve">
-        <value>你不能修改成员{0}，因为你已经将这个方法设置为Const.{1}了。</value>
-    </data>
-    <data name="MemberDescriptorTittle" xml:space="preserve">
-        <value>请不要修改这个成员</value>
-    </data>
-    <data name="MethodDescriptorTittle" xml:space="preserve">
+  <data name="MethodDescriptorTittle" xml:space="preserve">
         <value>请不要调用这个方法</value>
     </data>
-    <data name="MethodDescriptorMessage" xml:space="preserve">
+  <data name="MethodDescriptorMessage" xml:space="preserve">
         <value>你不能调用函数{0}，因为你已经将这个方法设置为Const.{1}了。</value>
     </data>
-    <data name="CantFindDescriptorTittle" xml:space="preserve">
+  <data name="MemberDescriptorTittle" xml:space="preserve">
+        <value>请不要修改这个成员</value>
+    </data>
+  <data name="MemberDescriptorMessage" xml:space="preserve">
+        <value>你不能修改成员{0}，因为你已经将这个方法设置为Const.{1}了。</value>
+    </data>
+  <data name="CantFindDescriptorTittle" xml:space="preserve">
         <value>它的名字呢？</value>
     </data>
-    <data name="CantFindDescriptorMessage" xml:space="preserve">
+  <data name="CantFindDescriptorMessage" xml:space="preserve">
         <value>如何获得这个表达式的名字呢？</value>
     </data>
-    <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
+  <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
         <value>请不要调用这个参数的这个方法</value>
     </data>
-    <data name="MemberInvokeDescriptorTittle" xml:space="preserve">
+  <data name="ParameterInvokeDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{2}，因为你已经将参数{0}设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
+    </data>
+  <data name="MemberInvokeDescriptorTittle" xml:space="preserve">
         <value>请不要调用这个成员的这个方法</value>
     </data>
-    <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
+  <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
         <value>你不能调用函数{2}，因为你已经将这个方法设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
-    </data>
-    <data name="ParameterInvokeDescriptorMessage" xml:space="preserve">
-        <value>你不能调用函数{2}，因为你已经将参数{0}设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
     </data>
 </root>
