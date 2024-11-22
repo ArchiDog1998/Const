@@ -26,4 +26,8 @@
         <DependentUpon>DiagnosticStrings.resx</DependentUpon>
       </Compile>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Generators\" />
+    </ItemGroup>
 </Project>

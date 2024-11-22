@@ -23,7 +23,7 @@ public static class DiagnosticExtensions
     #region Usage Diagnotic
 
     private static DiagnosticDescriptor CreateUsageErrorDescriptor(int id, string title, string messageFormat) 
-        => new($"CT1{id:D3}", Local(title), Local(messageFormat), "Usage", DiagnosticSeverity.Error, true);
+        => new($"AC1{id:D3}", Local(title), Local(messageFormat), "Usage", DiagnosticSeverity.Error, true);
 
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor(1,
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
@@ -60,7 +60,7 @@ public static class DiagnosticExtensions
     #region ToolBug Diagnotic
 
     private static DiagnosticDescriptor CreateToolWarningDescriptor(int id, string title, string messageFormat) 
-        => new($"CT2{id:D3}", Local(title), Local(messageFormat), "Tool", DiagnosticSeverity.Warning, true);
+        => new($"AC2{id:D3}", Local(title), Local(messageFormat), "Tool", DiagnosticSeverity.Warning, true);
     
     private static readonly DiagnosticDescriptor CantFindDescriptor = CreateToolWarningDescriptor(1,
         nameof(DiagnosticStrings.CantFindDescriptorTittle), nameof(DiagnosticStrings.CantFindDescriptorMessage));
@@ -71,7 +71,7 @@ public static class DiagnosticExtensions
 #if DEBUG
     private static readonly DiagnosticDescriptor DebugMessageDescriptor =  
 #pragma warning disable RS2000
-        new("CT2000", "Debug Message", "{1}", "Tool", DiagnosticSeverity.Warning, true);
+        new("AC2000", "Debug Message", "{1}", "Tool", DiagnosticSeverity.Warning, true);
 #pragma warning restore RS2000
     
     public static void ReportDebugMessage(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, string message)

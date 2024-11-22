@@ -9,7 +9,7 @@ namespace ArchiToolkit.Analyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 {
-    private const string ConstName = "Const.ConstAttribute";
+    private const string ConstName = "ArchiToolkit.ConstAttribute";
 
     public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         DiagnosticExtensions.Descriptors;

@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>preview</LangVersion>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Const.Analyzer\Const.Analyzer.csproj" OutputItemType="Analyzer" />
-      <ProjectReference Include="..\Const\Const.csproj" />
+      <ProjectReference Include="..\ArchiToolkit.Analyzer\ArchiToolkit.Analyzer.csproj" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\ArchiToolkit\ArchiToolkit.csproj" />
     </ItemGroup>
 
 </Project>
