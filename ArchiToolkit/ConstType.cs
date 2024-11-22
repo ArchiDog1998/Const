@@ -1,4 +1,4 @@
-﻿namespace Const;
+﻿namespace ArchiToolkit;
 
 /// <summary>
 /// The type of const.

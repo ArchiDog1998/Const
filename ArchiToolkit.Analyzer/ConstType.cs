@@ -1,4 +1,4 @@
-﻿namespace Const.Analyzer;
+﻿namespace ArchiToolkit.Analyzer;
 
 [Flags]
 public enum ConstType : byte

@@ -1,4 +1,4 @@
-﻿namespace Const;
+﻿namespace ArchiToolkit;
 
 /// <summary>
 /// Make your method or parameter as const.

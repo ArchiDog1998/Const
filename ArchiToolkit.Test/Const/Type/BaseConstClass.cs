@@ -1,4 +1,4 @@
-﻿namespace Const.Test.Type;
+﻿namespace ArchiToolkit.Test.Const.Type;
 
 public class BaseConstClass
 {

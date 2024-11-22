@@ -1,8 +1,9 @@
 ﻿using System.Collections.Immutable;
+using ArchiToolkit.Analyzer.Resources;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Const.Analyzer;
+namespace ArchiToolkit.Analyzer;
 
 public static class DiagnosticExtensions
 {

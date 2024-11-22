@@ -1,4 +1,4 @@
-﻿namespace Const.Test.Type;
+﻿namespace ArchiToolkit.Test.Const;
 
 public partial class PartialTest
 {

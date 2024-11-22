@@ -1,4 +1,4 @@
-﻿namespace Const.Test;
+﻿namespace ArchiToolkit.Test.Const;
 
 public class BaseOverrideTest
 {

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace Const.Analyzer;
+namespace ArchiToolkit.Analyzer;
 
 internal static class RoslynExtensions
 {

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.Net.Mime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Const.Analyzer;
+namespace ArchiToolkit.Analyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DeclarationConstAnalyzer : DiagnosticAnalyzer

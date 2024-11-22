@@ -1,6 +1,6 @@
-﻿using Const.Test.Type;
+﻿using ArchiToolkit.Test.Const.Type;
 
-namespace Const.Test;
+namespace ArchiToolkit.Test.Const;
 
 public class PropertyTest
 {
