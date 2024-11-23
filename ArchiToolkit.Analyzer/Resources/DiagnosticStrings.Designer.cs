@@ -8,6 +8,9 @@
 //------------------------------------------------------------------------------
 
 namespace ArchiToolkit.Analyzer.Resources {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -35,7 +38,7 @@ namespace ArchiToolkit.Analyzer.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Const.Analyzer.Resources.DiagnosticStrings", typeof(DiagnosticStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ArchiToolkit.Analyzer.Resources.DiagnosticStrings", typeof(DiagnosticStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -161,6 +164,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         internal static string ParameterInvokeDescriptorTittle {
             get {
                 return ResourceManager.GetString("ParameterInvokeDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please add the &apos;partial&apos; keyword to the property &apos;{0}&apos;.
+        /// </summary>
+        internal static string PartialPropertyDecriptorMesage {
+            get {
+                return ResourceManager.GetString("PartialPropertyDecriptorMesage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add &apos;partial&apos; keyword to the property.
+        /// </summary>
+        internal static string PartialPropertyDescriptorTittle {
+            get {
+                return ResourceManager.GetString("PartialPropertyDescriptorTittle", resourceCulture);
             }
         }
     }

@@ -4,15 +4,15 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace ArchiToolkit.Analyzer;
+namespace ArchiToolkit.Analyzer.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 {
-    private const string ConstName = "ArchiToolkit.ConstAttribute";
+    private const string AttributeName = "ArchiToolkit.ConstAttribute";
 
     public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        DiagnosticExtensions.Descriptors;
+        DiagnosticExtensions.ConstDescriptors;
 
     public sealed override void Initialize(AnalysisContext context)
     {
@@ -74,7 +74,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
     private static ConstType GetConstTypeAttributeRaw(ISymbol? symbol)
     {
-        var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstName);
+        var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is AttributeName);
         if (attr == null) return 0;
         var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
         var by = (byte?)type.Value ?? byte.MaxValue;

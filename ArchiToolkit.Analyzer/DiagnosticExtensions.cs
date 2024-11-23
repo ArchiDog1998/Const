@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using ArchiToolkit.Analyzer.Analyzers;
 using ArchiToolkit.Analyzer.Resources;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -7,7 +8,16 @@ namespace ArchiToolkit.Analyzer;
 
 public static class DiagnosticExtensions
 {
-    public static ImmutableArray<DiagnosticDescriptor> Descriptors =>
+    public const string PartialPropertyDiagnosticId = "AC1101";
+    public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
+    [
+        PartialPropertyDescriptor,
+#if DEBUG
+        DebugMessageDescriptor,
+#endif
+    ];
+    
+    public static ImmutableArray<DiagnosticDescriptor> ConstDescriptors =>
     [
         ParameterDescriptor, MemberDescriptor, MethodDescriptor,
         ParameterInvokeDescriptor, MemberInvokeDescriptor,
@@ -21,24 +31,30 @@ public static class DiagnosticExtensions
         new(nameOfLocalizableString, DiagnosticStrings.ResourceManager, typeof(DiagnosticStrings));
 
     #region Usage Diagnotic
+    
+    private static DiagnosticDescriptor CreateUsageErrorDescriptor(string id, string title, string messageFormat) 
+        => new(id, Local(title), Local(messageFormat), "Usage", DiagnosticSeverity.Error, true);
+    
+    private static readonly DiagnosticDescriptor PartialPropertyDescriptor = CreateUsageErrorDescriptor(PartialPropertyDiagnosticId, 
+        nameof(DiagnosticStrings.PartialPropertyDescriptorTittle), nameof(DiagnosticStrings.PartialPropertyDecriptorMesage));
 
-    private static DiagnosticDescriptor CreateUsageErrorDescriptor(int id, string title, string messageFormat) 
-        => new($"AC1{id:D3}", Local(title), Local(messageFormat), "Usage", DiagnosticSeverity.Error, true);
-
-    private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor(1,
+    private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor MemberDescriptor = CreateUsageErrorDescriptor(2,
+    private static readonly DiagnosticDescriptor MemberDescriptor = CreateUsageErrorDescriptor("AC1002",
         nameof(DiagnosticStrings.MemberDescriptorTittle), nameof(DiagnosticStrings.MemberDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor MethodDescriptor = CreateUsageErrorDescriptor(3,
+    private static readonly DiagnosticDescriptor MethodDescriptor = CreateUsageErrorDescriptor("AC1003",
         nameof(DiagnosticStrings.MethodDescriptorTittle), nameof(DiagnosticStrings.MethodDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor ParameterInvokeDescriptor = CreateUsageErrorDescriptor(4,
+    private static readonly DiagnosticDescriptor ParameterInvokeDescriptor = CreateUsageErrorDescriptor("AC1004",
         nameof(DiagnosticStrings.ParameterInvokeDescriptorTittle), nameof(DiagnosticStrings.ParameterInvokeDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor(5,
+    private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor("AC1005",
         nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
+
+    public static void ReportPartial(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
+        => ReportDescriptor(context, PartialPropertyDescriptor, syntaxNode);
     
     public static void ReportParameter(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, ConstType type)
         => ReportDescriptor(context, ParameterDescriptor, syntaxNode, type);
@@ -59,10 +75,10 @@ public static class DiagnosticExtensions
 
     #region ToolBug Diagnotic
 
-    private static DiagnosticDescriptor CreateToolWarningDescriptor(int id, string title, string messageFormat) 
-        => new($"AC2{id:D3}", Local(title), Local(messageFormat), "Tool", DiagnosticSeverity.Warning, true);
+    private static DiagnosticDescriptor CreateToolWarningDescriptor(string id, string title, string messageFormat) 
+        => new(id, Local(title), Local(messageFormat), "Tool", DiagnosticSeverity.Warning, true);
     
-    private static readonly DiagnosticDescriptor CantFindDescriptor = CreateToolWarningDescriptor(1,
+    private static readonly DiagnosticDescriptor CantFindDescriptor = CreateToolWarningDescriptor("AC2001",
         nameof(DiagnosticStrings.CantFindDescriptorTittle), nameof(DiagnosticStrings.CantFindDescriptorMessage));
     
     public static void ReportCantFind(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
@@ -80,5 +96,8 @@ public static class DiagnosticExtensions
     #endregion
 
     private static void ReportDescriptor(SyntaxNodeAnalysisContext context, DiagnosticDescriptor descriptor, SyntaxNode syntaxNode, params object?[] args)
+        => context.ReportDiagnostic(Diagnostic.Create(descriptor, syntaxNode.GetLocation(), [syntaxNode, ..args]));
+    
+    private static void ReportDescriptor(SyntaxNodeAnalysisContext context, DiagnosticDescriptor descriptor, SyntaxToken syntaxNode, params object?[] args)
         => context.ReportDiagnostic(Diagnostic.Create(descriptor, syntaxNode.GetLocation(), [syntaxNode, ..args]));
 }

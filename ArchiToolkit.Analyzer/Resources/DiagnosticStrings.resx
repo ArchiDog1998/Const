@@ -54,4 +54,10 @@
     <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
         <value>You cannot invoke method '{2}', because you have set this method to Const.{1}. You can try to modify the Const Attribute in '{2}'.</value>
     </data>
+    <data name="PartialPropertyDecriptorMesage" xml:space="preserve">
+        <value>Please add the 'partial' keyword to the property '{0}'</value>
+    </data>
+    <data name="PartialPropertyDescriptorTittle" xml:space="preserve">
+        <value>Add 'partial' keyword to the property</value>
+    </data>
 </root>
