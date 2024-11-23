@@ -84,4 +84,16 @@ internal static class RoslynExtensions
         if (node is T result) return [result];
         return node.ChildNodes().SelectMany(n => n.GetChildren<T>(checkSkipNodes));
     }
+    
+    /// <summary>
+    /// Print a node to string.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
+    public static string NodeToString(this SyntaxNode node)
+    {
+        using var stringWriter = new StringWriter();
+        node.NormalizeWhitespace().WriteTo(stringWriter);
+        return stringWriter.ToString();
+    }
 }

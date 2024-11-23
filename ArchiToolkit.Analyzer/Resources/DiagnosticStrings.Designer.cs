@@ -60,6 +60,42 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can only add the accessor get or set.
+        /// </summary>
+        internal static string AccessorTypePropertyDescriptorMessage {
+            get {
+                return ResourceManager.GetString("AccessorTypePropertyDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can only add the accessor get or set.
+        /// </summary>
+        internal static string AccessorTypePropertyDescriptorTittle {
+            get {
+                return ResourceManager.GetString("AccessorTypePropertyDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t add body to the property.
+        /// </summary>
+        internal static string BodyPropertyDecriptorTittle {
+            get {
+                return ResourceManager.GetString("BodyPropertyDecriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t add body to this property .
+        /// </summary>
+        internal static string BodyPropertyDescriptorMessage {
+            get {
+                return ResourceManager.GetString("BodyPropertyDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to How to access this identifier name in Expression?.
         /// </summary>
         internal static string CantFindDescriptorMessage {

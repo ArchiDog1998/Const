@@ -28,16 +28,16 @@ public class PropertyDependencyCodeFixer : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create( //TODO: i18n for this!
                 title: $"Add partial keyword for the property '{declaration.Identifier.Text}'",
-                createChangedSolution: _ => MakeUppercaseAsync(context.Document, root!, declaration),
+                createChangedSolution: _ => AddPartialAsync(context.Document, root!, declaration),
                 equivalenceKey: "Add partial keyword"),
             diagnostic);
     }
 
-    private static Task<Solution> MakeUppercaseAsync(Document document,
+    private static Task<Solution> AddPartialAsync(Document document,
         SyntaxNode root,
         PropertyDeclarationSyntax propertyDeclaration)
     {
-        var newNode = propertyDeclaration.WithModifiers(propertyDeclaration.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.PartialKeyword)));
+        var newNode = propertyDeclaration.WithModifiers(propertyDeclaration.Modifiers.Add(Token(SyntaxKind.PartialKeyword)));
         
         var newRoot = root.ReplaceNode(propertyDeclaration, newNode);
         

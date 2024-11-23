@@ -60,4 +60,16 @@
     <data name="PartialPropertyDescriptorTittle" xml:space="preserve">
         <value>Add 'partial' keyword to the property</value>
     </data>
+    <data name="BodyPropertyDecriptorTittle" xml:space="preserve">
+        <value>Don't add body to the property</value>
+    </data>
+    <data name="BodyPropertyDescriptorMessage" xml:space="preserve">
+        <value>Don't add body to this property </value>
+    </data>
+    <data name="AccessorTypePropertyDescriptorTittle" xml:space="preserve">
+        <value>You can only add the accessor get or set</value>
+    </data>
+    <data name="AccessorTypePropertyDescriptorMessage" xml:space="preserve">
+        <value>You can only add the accessor get or set</value>
+    </data>
 </root>

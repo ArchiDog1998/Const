@@ -13,17 +13,73 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
     {
         var provider = context.SyntaxProvider.ForAttributeWithMetadataName(
             PropertyDependencyAnalyzer.AttributeName,
-            static (node, _) => node is BasePropertyDeclarationSyntax,
-            static (n, _) => ((BasePropertyDeclarationSyntax)n.TargetNode, n.SemanticModel));
+            static (node, _) => node is PropertyDeclarationSyntax,
+            static (n, _) => ((PropertyDeclarationSyntax)n.TargetNode, n.SemanticModel));
 
         context.RegisterSourceOutput(provider.Collect(), Execute);
     }
-
-    private static void Execute(SourceProductionContext ctx, ImmutableArray<(BasePropertyDeclarationSyntax Node, SemanticModel SemanticModel)> list)
+    
+    private static void Execute(SourceProductionContext ctx, ImmutableArray<(PropertyDeclarationSyntax Node, SemanticModel SemanticModel)> list)
     {
+        List<BasePropertyDependencyItem> props = [];
         foreach (var (node, model) in list)
         {
             if (!node.Modifiers.Any(SyntaxKind.PartialKeyword)) continue;
+            if (model.GetDeclaredSymbol(node) is not { } symbol) continue;
+            
+            CheckAccessors(node, out var hasGet, out var hasSet);
+            if (!hasGet) continue;
+
+            props.Add(hasSet ? new FieldPropertyItem(node, symbol) : new MethodPropertyItem(node, symbol));
+        }
+
+        foreach (var prop in props)
+        {
+            SaveMembers(ctx, prop);
+        }
+    }
+
+    private static void SaveMembers(SourceProductionContext ctx, BasePropertyDependencyItem basePropertyDependencyItem)
+    {
+        var members = basePropertyDependencyItem.GetMembers();
+        if (members.Count == 0) return;
+        
+        var node = basePropertyDependencyItem.Node;
+        var parents = node.Parent?.AncestorsAndSelf().ToImmutableArray();
+        var type = parents?.OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        var nameSpace = parents?.OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+        
+        if (type is null || nameSpace is null) return;
+        
+        var code = NamespaceDeclaration(nameSpace.Name.ToFullString())
+            .WithMembers(
+                SingletonList<MemberDeclarationSyntax>(ClassDeclaration(type.Identifier.Text)
+                    .WithModifiers(type.Modifiers)
+                    .WithMembers(List(members))))
+            .NodeToString();
+            
+        var symbol = basePropertyDependencyItem.Symbol;
+        ctx.AddSource($"{symbol.GetFullMetadataName()}.{node.Identifier.Text}.g.cs", code);
+    }
+    
+    private static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGet, out bool hasSet)
+    {
+        hasGet = hasSet = false;
+            
+        var accessors = node.AccessorList?.Accessors;
+        if (accessors == null) return;
+            
+        foreach (var accessor in accessors)
+        {
+            switch (accessor.Kind())
+            {
+                case SyntaxKind.GetAccessorDeclaration:
+                    hasGet = true;
+                    break;
+                case SyntaxKind.SetAccessorDeclaration:
+                    hasSet = true;
+                    break;
+            }
         }
     }
 }

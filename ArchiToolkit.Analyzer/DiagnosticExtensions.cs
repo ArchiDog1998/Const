@@ -12,6 +12,8 @@ public static class DiagnosticExtensions
     public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
     [
         PartialPropertyDescriptor,
+        BodyPropertyDescriptor,
+        AccessorTypePropertyDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
 #endif
@@ -37,6 +39,12 @@ public static class DiagnosticExtensions
     
     private static readonly DiagnosticDescriptor PartialPropertyDescriptor = CreateUsageErrorDescriptor(PartialPropertyDiagnosticId, 
         nameof(DiagnosticStrings.PartialPropertyDescriptorTittle), nameof(DiagnosticStrings.PartialPropertyDecriptorMesage));
+    
+    private static readonly DiagnosticDescriptor BodyPropertyDescriptor = CreateUsageErrorDescriptor("AC1102", 
+        nameof(DiagnosticStrings.BodyPropertyDecriptorTittle), nameof(DiagnosticStrings.BodyPropertyDescriptorMessage));
+    
+    private static readonly DiagnosticDescriptor AccessorTypePropertyDescriptor = CreateUsageErrorDescriptor("AC1103", 
+        nameof(DiagnosticStrings.AccessorTypePropertyDescriptorTittle), nameof(DiagnosticStrings.AccessorTypePropertyDescriptorMessage));
 
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
@@ -53,6 +61,12 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor("AC1005",
         nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
 
+    public static void ReportAccessorType(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
+        => ReportDescriptor(context, AccessorTypePropertyDescriptor, syntaxNode);
+    
+    public static void ReportBody(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
+        => ReportDescriptor(context, BodyPropertyDescriptor, syntaxNode);
+    
     public static void ReportPartial(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
         => ReportDescriptor(context, PartialPropertyDescriptor, syntaxNode);
     
