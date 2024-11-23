@@ -53,4 +53,10 @@
   <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
         <value>你不能调用函数{2}，因为你已经将这个方法设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
     </data>
+  <data name="PartialPropertyDecriptorMesage" xml:space="preserve">
+        <value>Please add the 'partial' keyword to the property '{0}'</value>
+    </data>
+  <data name="PartialPropertyDescriptorTittle" xml:space="preserve">
+        <value>请添加partial关键字到属性中</value>
+    </data>
 </root>
