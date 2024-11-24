@@ -13,8 +13,8 @@ public class PartialMethodDependencyCodeFixer : BaseDependencyCodeFixer
 {
     public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticExtensions.PartialMethodDiagnosticId];
 
-    public override string Tittle =>  CodeFixerStrings.PartialMethodFixerTittle;
-    public override string EquivalenceKey =>  CodeFixerStrings.PartialMethodFixerEquivalenceKey;
+    protected override string Tittle =>  CodeFixerStrings.PartialMethodFixerTittle;
+    protected override string EquivalenceKey =>  CodeFixerStrings.PartialMethodFixerEquivalenceKey;
 
     protected override Task<Solution> AddPartialAsync(Document document,
         SyntaxNode root,

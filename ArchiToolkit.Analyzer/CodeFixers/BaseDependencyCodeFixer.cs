@@ -10,8 +10,8 @@ public abstract class BaseDependencyCodeFixer : CodeFixProvider
     public sealed override FixAllProvider GetFixAllProvider()
         => WellKnownFixAllProviders.BatchFixer;
 
-    public abstract string Tittle { get; }
-    public abstract string EquivalenceKey { get; }
+    protected abstract string Tittle { get; }
+    protected abstract string EquivalenceKey { get; }
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {

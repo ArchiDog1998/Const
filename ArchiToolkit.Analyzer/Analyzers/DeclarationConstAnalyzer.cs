@@ -396,12 +396,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         deep = 0;
         isThisOrBase = false;
         
-        while (exp is not SimpleNameSyntax)
+        while (true)
         {
             deep++;
-
-            //TODO: Find a better way to skip this loop!
-            if (deep > 32) return null;
             
             switch (exp)
             {
@@ -423,13 +420,15 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     }
 
                     break;
+                
+                case SimpleNameSyntax name:
+                    return name;
+                
+                default:
+                    context.ReportCantFind(exp);
+                    return null;
             }
         }
-
-        if (exp is SimpleNameSyntax name) return name;
-
-        context.ReportCantFind(exp);
-        return null;
     }
 
     private static string GetSyntaxName(SimpleNameSyntax name) => name.Identifier.ToFullString().Trim();

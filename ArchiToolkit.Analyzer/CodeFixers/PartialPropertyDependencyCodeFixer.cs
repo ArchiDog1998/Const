@@ -11,8 +11,8 @@ namespace ArchiToolkit.Analyzer.CodeFixers;
 public class PartialPropertyDependencyCodeFixer : BaseDependencyCodeFixer
 {
     public override ImmutableArray<string> FixableDiagnosticIds  => [DiagnosticExtensions.PartialPropertyDiagnosticId];
-    public override string Tittle => CodeFixerStrings.PartialPropertyFixerTittle;
-    public override string EquivalenceKey =>  CodeFixerStrings.PartialPropertyFixerEquivalenceKey;
+    protected override string Tittle => CodeFixerStrings.PartialPropertyFixerTittle;
+    protected override string EquivalenceKey =>  CodeFixerStrings.PartialPropertyFixerEquivalenceKey;
 
     protected override Task<Solution> AddPartialAsync(Document document,
         SyntaxNode root,
