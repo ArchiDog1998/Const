@@ -1,3 +1,5 @@
 files:
   - source: ArchiToolkit.Analyzer/Resources/DiagnosticStrings.resx
     translation: /ArchiToolkit.Analyzer/Resources/DiagnosticStrings.%two_letters_code%.resx
+  - source: ArchiToolkit.Analyzer/Resources/CodeFixerStrings.resx
+    translation: /ArchiToolkit.Analyzer/Resources/DiagnosticStrings.%two_letters_code%.resx
