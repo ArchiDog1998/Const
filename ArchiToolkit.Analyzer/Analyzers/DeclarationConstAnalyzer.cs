@@ -321,10 +321,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             var name = GetFirstAccessorNameInvoke(context, statement, true, out _);
             if (name is null) continue;
-
+            
             if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol)
                 continue;
-
+            
             if (context.SemanticModel.GetSymbolInfo(name).Symbol is not IMethodSymbol)
                 continue;
             
@@ -395,11 +395,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     {
         deep = 0;
         isThisOrBase = false;
-
+        
         while (exp is not SimpleNameSyntax)
         {
             deep++;
 
+            if (deep > 1024) return null;
+            
             switch (exp)
             {
                 case MemberAccessExpressionSyntax member:
