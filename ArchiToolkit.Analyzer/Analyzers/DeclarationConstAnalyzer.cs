@@ -40,7 +40,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         var type = GetConstTypeAttribute(symbol);
         CheckMember(context, symbol, body, type);
         CheckMethod(context, body, type);
-
+        
         CheckParameter(context, symbol, body);
     }
 

@@ -38,7 +38,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
         {
             SaveMembers(ctx, prop);
         }
-
+        
         foreach (var grp in props.OfType<MethodPropertyItem>()
                      .GroupBy(p => p.Symbol.Type, SymbolEqualityComparer.Default))
         {

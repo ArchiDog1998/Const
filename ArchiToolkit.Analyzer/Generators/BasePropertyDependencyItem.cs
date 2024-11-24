@@ -50,9 +50,9 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
             if (newAccessor is null) continue;
             resultAccessors.Add(newAccessor);
         }
-
-        return node.WithType(IdentifierName(TypeName))
-            .WithAttributeLists(List<AttributeListSyntax>([]))
+        
+        return PropertyDeclaration(IdentifierName(TypeName), Identifier(node.Identifier.Text))
+            .WithModifiers(TokenList(node.Modifiers.Select(m => Token(m.Kind()))))
             .WithAccessorList(AccessorList(List(resultAccessors)));
     }
     

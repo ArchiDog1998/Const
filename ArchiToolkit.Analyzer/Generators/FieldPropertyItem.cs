@@ -9,10 +9,11 @@ internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol
 {
     protected override AccessorDeclarationSyntax? UpdateAccess(AccessorDeclarationSyntax accessor)
     {
+        accessor = AccessorDeclaration(accessor.Kind()).WithModifiers(TokenList(accessor.Modifiers.Select(m => Token(m.Kind()))));
         return accessor.Kind() switch
         {
-            SyntaxKind.GetAccessorDeclaration => accessor,
-            SyntaxKind.SetAccessorDeclaration => accessor.WithSemicolonToken(Token(SyntaxKind.None))
+            SyntaxKind.GetAccessorDeclaration => accessor.WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+            SyntaxKind.SetAccessorDeclaration => accessor
                 .WithBody(Block(
                 IfStatement(
                     InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,

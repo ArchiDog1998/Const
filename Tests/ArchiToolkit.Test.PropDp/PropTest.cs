@@ -1,6 +1,7 @@
 ﻿namespace ArchiToolkit.Test.PropDp;
 internal partial class PropTest
 {
-    //[PropDp]
-    public int Test { get; set; }
+    [PropDp]
+    public partial int Test { get; set; }
+    //public partial int Test { get; set  => field = value; }
 }

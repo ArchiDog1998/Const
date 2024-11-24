@@ -11,7 +11,6 @@ namespace ArchiToolkit.Analyzer.Analyzers;
 public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
 {
     internal const string AttributeName = "ArchiToolkit.PropDpAttribute";
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticExtensions.PropDpDescriptors;
 
     public override void Initialize(AnalysisContext context)
@@ -73,32 +72,32 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
     {
         CheckAccessors(node, out var hasGetter, out var hasSetter);
         if (!hasGetter || hasSetter) return;
-
+        
         if (model.GetDeclaredSymbol(node) is not { } symbol) return;
-
+        
         var property = new MethodPropertyItem(node, symbol, model);
         var method = property.GetMethodDeclaration();
-
+        
         PartialMethodExistenceCheck();
         PartialMethodCallSelfCheck();
-
+        
         return;
-
+        
         void PartialMethodExistenceCheck()
         {
             if (method is not null) return;
             context.ReportPartialMethod(node.Identifier);
         }
-
+        
         void PartialMethodCallSelfCheck()
         {
             var accessors = property.GetAccessItems()
                 .Where(i => i.HasSymbol(symbol)).ToImmutableArray();
-
+        
             if (!accessors.Any()) return;
-
+        
             var accessor = accessors.First();
-
+        
             context.ReportPartialMethodCallSelf(accessor.Expression);
         }
     }
