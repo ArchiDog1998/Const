@@ -27,7 +27,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
             if (!node.Modifiers.Any(SyntaxKind.PartialKeyword)) continue;
             if (model.GetDeclaredSymbol(node) is not { } symbol) continue;
             
-            CheckAccessors(node, out var hasGet, out var hasSet);
+            PropertyDependencyAnalyzer.CheckAccessors(node, out var hasGet, out var hasSet);
             if (!hasGet) continue;
 
             props.Add(hasSet ? new FieldPropertyItem(node, symbol) : new MethodPropertyItem(node, symbol));
@@ -60,26 +60,5 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
             
         var symbol = basePropertyDependencyItem.Symbol;
         ctx.AddSource($"{symbol.GetFullMetadataName()}.{node.Identifier.Text}.g.cs", code);
-    }
-    
-    private static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGet, out bool hasSet)
-    {
-        hasGet = hasSet = false;
-            
-        var accessors = node.AccessorList?.Accessors;
-        if (accessors == null) return;
-            
-        foreach (var accessor in accessors)
-        {
-            switch (accessor.Kind())
-            {
-                case SyntaxKind.GetAccessorDeclaration:
-                    hasGet = true;
-                    break;
-                case SyntaxKind.SetAccessorDeclaration:
-                    hasSet = true;
-                    break;
-            }
-        }
     }
 }

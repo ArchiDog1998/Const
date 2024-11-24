@@ -20,6 +20,6 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-        <None Include="..\$(SolutionName).Analyzer\bin\$(Configuration)\netstandard2.0\$(SolutionName).Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="..\ArchiToolkit.Analyzer\bin\$(Configuration)\netstandard2.0\ArchiToolkit.Analyzer.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 </Project>

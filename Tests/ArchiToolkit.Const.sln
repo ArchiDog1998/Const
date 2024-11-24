@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiToolkit", "..\ArchiToolkit\ArchiToolkit.csproj", "{FEAA94C0-2B39-4F11-9F81-560F5170D76A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiToolkit.Analyzer", "..\ArchiToolkit.Analyzer\ArchiToolkit.Analyzer.csproj", "{B97A37EC-8699-4135-8BAB-DC180A6A00E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiToolkit.Test.Const", "ArchiToolkit.Test.Const\ArchiToolkit.Test.Const.csproj", "{7F7C7E1F-2A83-406B-82F0-B69C07E55E55}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEAA94C0-2B39-4F11-9F81-560F5170D76A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEAA94C0-2B39-4F11-9F81-560F5170D76A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEAA94C0-2B39-4F11-9F81-560F5170D76A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEAA94C0-2B39-4F11-9F81-560F5170D76A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B97A37EC-8699-4135-8BAB-DC180A6A00E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B97A37EC-8699-4135-8BAB-DC180A6A00E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B97A37EC-8699-4135-8BAB-DC180A6A00E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B97A37EC-8699-4135-8BAB-DC180A6A00E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F7C7E1F-2A83-406B-82F0-B69C07E55E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F7C7E1F-2A83-406B-82F0-B69C07E55E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F7C7E1F-2A83-406B-82F0-B69C07E55E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F7C7E1F-2A83-406B-82F0-B69C07E55E55}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

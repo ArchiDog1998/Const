@@ -32,6 +32,7 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         
         PartialCheck(context, node);
         AccessorsCheck(context, node);
+        PartialMethodCheck(context, node);
     }
 
     private static void PartialCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
@@ -63,6 +64,33 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
             if (accessor.Kind() is not SyntaxKind.GetAccessorDeclaration and not SyntaxKind.SetAccessorDeclaration)
             {
                 context.ReportAccessorType(accessor);
+            }
+        }
+    }
+
+    private static void PartialMethodCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
+    {
+        CheckAccessors(node, out var hasGetter, out var hasSetter);
+        if (!hasGetter || hasSetter) return;
+    }
+    
+    internal static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGetter, out bool hasSetter)
+    {
+        hasGetter = hasSetter = false;
+            
+        var accessors = node.AccessorList?.Accessors;
+        if (accessors == null) return;
+            
+        foreach (var accessor in accessors)
+        {
+            switch (accessor.Kind())
+            {
+                case SyntaxKind.GetAccessorDeclaration:
+                    hasGetter = true;
+                    break;
+                case SyntaxKind.SetAccessorDeclaration:
+                    hasSetter = true;
+                    break;
             }
         }
     }

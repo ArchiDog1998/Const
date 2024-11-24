@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ArchiToolkit.Analyzer\ArchiToolkit.Analyzer.csproj" OutputItemType="Analyzer" />
-      <ProjectReference Include="..\ArchiToolkit\ArchiToolkit.csproj" />
+      <ProjectReference Include="..\..\ArchiToolkit.Analyzer\ArchiToolkit.Analyzer.csproj" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\..\ArchiToolkit\ArchiToolkit.csproj" />
     </ItemGroup>
 
 </Project>
