@@ -72,19 +72,27 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             .WithBody(
                 Block(
                     IfStatement(
-                        PrefixUnaryExpression(
-                            SyntaxKind.LogicalNotExpression,
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(Name.LazyName),
-                                IdentifierName("IsValueCreated"))),
-                        ReturnStatement()),
-                    ExpressionStatement(
-                        ConditionalAccessExpression(
-                            IdentifierName(Name.OnNameChanging),
-                            InvocationExpression(
-                                MemberBindingExpression(
-                                    IdentifierName("Invoke"))))),
+                        IsPatternExpression(
+                            IdentifierName(Name.LazyName),
+                            UnaryPattern(
+                                ConstantPattern(
+                                    LiteralExpression(
+                                        SyntaxKind.NullLiteralExpression)))),
+                        Block(
+                            IfStatement(
+                                PrefixUnaryExpression(
+                                    SyntaxKind.LogicalNotExpression,
+                                    MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        IdentifierName(Name.LazyName),
+                                        IdentifierName("IsValueCreated"))),
+                                ReturnStatement()),
+                            ExpressionStatement(
+                                ConditionalAccessExpression(
+                                    IdentifierName(Name.OnNameChanging),
+                                    InvocationExpression(
+                                        MemberBindingExpression(
+                                            IdentifierName("Invoke"))))))),
                     ExpressionStatement(
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
