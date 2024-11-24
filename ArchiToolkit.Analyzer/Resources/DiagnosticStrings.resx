@@ -76,6 +76,12 @@
         <value>Please add partial method for getting this property</value>
     </data>
     <data name="PartialMethodDescriptorMessage" xml:space="preserve">
-        <value>Please add partial method for getting the property {0}</value>
+        <value>Please add partial method for getting the property '{0}'</value>
+    </data>
+    <data name="PartialMethodCallSelfDescriptorTittle" xml:space="preserve">
+        <value>Don't call this property in this method</value>
+    </data>
+    <data name="PartialMethodCallSelfDescriptorMessage" xml:space="preserve">
+        <value>Don't call this property in this method</value>
     </data>
 </root>

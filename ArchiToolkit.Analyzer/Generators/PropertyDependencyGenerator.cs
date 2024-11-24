@@ -30,7 +30,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
             PropertyDependencyAnalyzer.CheckAccessors(node, out var hasGet, out var hasSet);
             if (!hasGet) continue;
 
-            props.Add(hasSet ? new FieldPropertyItem(node, symbol) : new MethodPropertyItem(node, symbol));
+            props.Add(hasSet ? new FieldPropertyItem(node, symbol) : new MethodPropertyItem(node, symbol, model));
         }
 
         foreach (var prop in props)

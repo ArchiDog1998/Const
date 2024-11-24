@@ -1,15 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArchiToolkit.Analyzer.Generators;
 
-public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol)
+public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol, SemanticModel model)
     : BasePropertyDependencyItem(node, symbol)
 {
- 
     public override IReadOnlyList<MemberDeclarationSyntax> GetMembers() =>
-        [..base.GetMembers(), GetLazyField(), GetMethod(), ClearMethod()];
+        [..base.GetMembers(), GetLazyField(), GetMethod(), ClearMethod(), InitMethod()];
 
     protected override AccessorDeclarationSyntax UpdateAccess(AccessorDeclarationSyntax accessor)
     {
@@ -99,5 +99,84 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                             InvocationExpression(
                                 MemberBindingExpression(
                                     IdentifierName("Invoke")))))));
+    }
+
+    private MethodDeclarationSyntax InitMethod()
+    {
+        StatementSyntax[] items =
+        [
+            ExpressionStatement(
+                InvocationExpression(
+                    IdentifierName(Name.ClearName))),
+            ..GetStatementsForInit()
+        ];
+
+        return MethodDeclaration(
+                PredefinedType(
+                    Token(SyntaxKind.VoidKeyword)),
+                Identifier(Name.InitName))
+            .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
+            .WithBody(Block(items));
+    }
+
+    private IEnumerable<StatementSyntax> GetStatementsForInit() =>
+        GetAccessItems().SelectMany(exp => exp.CreateStatements());
+
+    internal ImmutableHashSet<PropertyAccessItem> GetAccessItems()
+    {
+        return GetExpressionBody().Select(exp => new PropertyAccessItem(exp, model)).ToImmutableHashSet(new PropertyAccessItemComparer());
+        
+        IReadOnlyList<ExpressionSyntax> GetExpressionBody()
+        {
+            var method = GetMethodDeclaration();
+            if (method is null) return [];
+            
+            var body = method.Body as SyntaxNode ?? method.ExpressionBody;
+            if (body is null) return [];
+
+            //TODO: maybe I lost sth. Please NO.
+            var baseMembers = body.GetChildren<AssignmentExpressionSyntax>().OfType<ExpressionSyntax>()
+                .Concat(body.GetChildren<BinaryExpressionSyntax>())
+                .Concat(body.GetChildren<InvocationExpressionSyntax>())
+                .SelectMany(GetMemberAccessFirst);
+
+            var locals = body.GetChildren<VariableDeclaratorSyntax>().Select(v => v.Initializer?.Value)
+                .OfType<ExpressionSyntax>().SelectMany(GetMemberAccessFirst);
+
+            return [..baseMembers, ..locals];
+
+            static IReadOnlyList<ExpressionSyntax> GetMemberAccessFirst(ExpressionSyntax expression)
+            {
+                return expression switch
+                {
+                    InvocationExpressionSyntax invocation =>
+                    [
+                        ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccess(arg.Expression))
+                    ],
+                    _ => GetMemberAccess(expression)
+                };
+
+                static IReadOnlyList<ExpressionSyntax> GetMemberAccess(ExpressionSyntax exp) => exp switch
+                {
+                    IdentifierNameSyntax name => [name],
+                    MemberAccessExpressionSyntax member => [member],
+                    AssignmentExpressionSyntax assignment => GetMemberAccess(assignment.Right),
+                    BinaryExpressionSyntax binary =>
+                    [
+                        ..GetMemberAccess(binary.Left), ..GetMemberAccess(binary.Right)
+                    ],
+                    _ => []
+                };
+            }
+        }
+    }
+
+    internal MethodDeclarationSyntax? GetMethodDeclaration()
+    {
+        var type = Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        if (type is null) return null;
+
+        var name = Name.GetName;
+        return type.GetChildren<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.Text == name);
     }
 }

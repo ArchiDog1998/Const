@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using ArchiToolkit.Analyzer.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,7 +33,7 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         
         PartialCheck(context, node);
         AccessorsCheck(context, node);
-        PartialMethodCheck(context, node);
+        PartialMethodCheck(context, node, model);
     }
 
     private static void PartialCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
@@ -68,19 +69,42 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void PartialMethodCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
+    private static void PartialMethodCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node, SemanticModel model)
     {
         CheckAccessors(node, out var hasGetter, out var hasSetter);
         if (!hasGetter || hasSetter) return;
 
-        var type = node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
-        if (type is null) return;
+        if (model.GetDeclaredSymbol(node) is not { } symbol) return;
+
+        var property = new MethodPropertyItem(node, symbol, model);
+        var method = property.GetMethodDeclaration();
+
+        PartialMethodExistenceCheck();
+        PartialMethodCallSelfCheck();
+
+        return;
         
-        var name = new PropDpName(node.Identifier.Text).GetName;
-        if (type.GetChildren<MethodDeclarationSyntax>().Any(m => m.Identifier.Text == name)) return;
-        
-        context.ReportPartialMethod(node.Identifier);
+        void PartialMethodExistenceCheck()
+        {
+            if (method is not null) return;
+            context.ReportPartialMethod(node.Identifier);
+        }
+
+        void PartialMethodCallSelfCheck()
+        {
+            if (method is null) return;
+
+            var accessors = property.GetAccessItems()
+                .Where(i => i.PropertySymbols.Any(s => s.Equals(symbol, SymbolEqualityComparer.Default))).ToImmutableArray();
+            
+            if (!accessors.Any()) return;
+            
+            var accessor = accessors.First();
+            
+            context.ReportPartialMethodCallSelf(accessor.Expression);
+        }
     }
+
     
     internal static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGetter, out bool hasSetter)
     {

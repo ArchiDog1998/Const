@@ -14,4 +14,5 @@ AC1101 | Usage | Error    | Add 'partial' keyword to the property
 AC1102 | Usage | Error | Don't add body to the property
 AC1103 | Usage | Error | You can only add the accessor get or set
 AC1104 | Usage | Error | Please add partial method for getting this property
+AC1105 | Usage | Error | DiagnosticExtensions
 AC2001  | Tool     | Warning  | Where is its name?                   
