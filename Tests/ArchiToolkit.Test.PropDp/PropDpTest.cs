@@ -13,7 +13,8 @@ public partial class PropDpTest
 
     private partial bool GetAnother()
     {
-        throw new NotImplementedException();
+        this.AnotherOne = 12;
+        return true;
     }
 
     public PropDpTest()

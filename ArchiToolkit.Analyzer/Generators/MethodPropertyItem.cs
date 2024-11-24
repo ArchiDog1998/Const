@@ -46,6 +46,12 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
         return MethodDeclaration(
                 IdentifierName(TypeName),
                 Identifier(Name.GetName))
+            .WithAttributeLists(
+                SingletonList(
+                    AttributeList(
+                        SingletonSeparatedList(
+                            Attribute(
+                                IdentifierName("global::ArchiToolkit.Const"))))))
             .WithModifiers(
                 TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.PartialKeyword)))
             .WithSemicolonToken(
