@@ -204,6 +204,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please add partial method for getting the property {0}.
+        /// </summary>
+        internal static string PartialMethodDescriptorMessage {
+            get {
+                return ResourceManager.GetString("PartialMethodDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please add partial method for getting this property.
+        /// </summary>
+        internal static string PartialMethodDescriptorTittle {
+            get {
+                return ResourceManager.GetString("PartialMethodDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please add the &apos;partial&apos; keyword to the property &apos;{0}&apos;.
         /// </summary>
         internal static string PartialPropertyDecriptorMesage {

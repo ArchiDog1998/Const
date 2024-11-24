@@ -9,10 +9,9 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
     public PropertyDeclarationSyntax Node => node;
     public IPropertySymbol Symbol => symbol;
     public virtual IReadOnlyList<MemberDeclarationSyntax> GetMembers() => [CreateEvents(), CreateProperty()];
-    public string Name => Node.Identifier.Text;
+    public PropDpName Name => new(Node.Identifier.Text);
     public string TypeName => "global::" + symbol.Type.GetFullMetadataName();
-    public string OnNameChanged => $"On{Name}Changed";
-    public string OnNameChanging => $"On{Name}Changing";
+
     
     private EventFieldDeclarationSyntax CreateEvents()
     {
@@ -25,10 +24,10 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
                             new SyntaxNodeOrToken[]
                             {
                                 VariableDeclarator(
-                                    Identifier(OnNameChanged)),
+                                    Identifier(Name.OnNameChanged)),
                                 Token(SyntaxKind.CommaToken),
                                 VariableDeclarator(
-                                    Identifier(OnNameChanging))
+                                    Identifier(Name.OnNameChanging))
                             })))
             .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithModifiers(

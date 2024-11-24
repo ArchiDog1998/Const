@@ -45,9 +45,9 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
         if (members.Count == 0) return;
         
         var node = basePropertyDependencyItem.Node;
-        var parents = node.Parent?.AncestorsAndSelf().ToImmutableArray();
-        var type = parents?.OfType<TypeDeclarationSyntax>().FirstOrDefault();
-        var nameSpace = parents?.OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+        var parents = node.Ancestors().ToImmutableArray();
+        var type = parents.OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        var nameSpace = parents.OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
         
         if (type is null || nameSpace is null) return;
         

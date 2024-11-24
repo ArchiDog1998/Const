@@ -7,10 +7,7 @@ namespace ArchiToolkit.Analyzer.Generators;
 public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol)
     : BasePropertyDependencyItem(node, symbol)
 {
-    public string ClearName => "Clear" + Name;
-    public string GetName => "Get" + Name;
-    private string LazyName => "_" + Name;
-
+ 
     public override IReadOnlyList<MemberDeclarationSyntax> GetMembers() =>
         [..base.GetMembers(), GetLazyField(), GetMethod(), ClearMethod()];
 
@@ -21,7 +18,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             ArrowExpressionClause(
                 MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName(LazyName),
+                    IdentifierName(Name.LazyName),
                     IdentifierName("Value"))));
     }
 
@@ -38,7 +35,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     .WithVariables(
                         SingletonSeparatedList(
                             VariableDeclarator(
-                                Identifier(LazyName)))))
+                                Identifier(Name.LazyName)))))
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PrivateKeyword)));
@@ -48,7 +45,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
     {
         return MethodDeclaration(
                 IdentifierName(TypeName),
-                Identifier(GetName))
+                Identifier(Name.GetName))
             .WithModifiers(
                 TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.PartialKeyword)))
             .WithSemicolonToken(
@@ -60,7 +57,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
         return MethodDeclaration(
                 PredefinedType(
                     Token(SyntaxKind.VoidKeyword)),
-                Identifier(ClearName))
+                Identifier(Name.ClearName))
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PrivateKeyword)))
@@ -69,29 +66,29 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     IfStatement(
                         MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(LazyName),
+                            IdentifierName(Name.LazyName),
                             IdentifierName("IsValueCreated")),
                         Block(
                             SingletonList<StatementSyntax>(
                                 ExpressionStatement(
                                     ConditionalAccessExpression(
-                                        IdentifierName(OnNameChanging),
+                                        IdentifierName(Name.OnNameChanging),
                                         InvocationExpression(
                                             MemberBindingExpression(
                                                 IdentifierName("Invoke")))))))),
                     ExpressionStatement(
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(LazyName),
+                            IdentifierName(Name.LazyName),
                             ImplicitObjectCreationExpression()
                                 .WithArgumentList(
                                     ArgumentList(
                                         SingletonSeparatedList<ArgumentSyntax>(
                                             Argument(
-                                                IdentifierName(GetName))))))),
+                                                IdentifierName(Name.GetName))))))),
                     ExpressionStatement(
                         ConditionalAccessExpression(
-                            IdentifierName(OnNameChanged),
+                            IdentifierName(Name.OnNameChanged),
                             InvocationExpression(
                                 MemberBindingExpression(
                                     IdentifierName("Invoke")))))));

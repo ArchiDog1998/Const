@@ -72,6 +72,14 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
     {
         CheckAccessors(node, out var hasGetter, out var hasSetter);
         if (!hasGetter || hasSetter) return;
+
+        var type = node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        if (type is null) return;
+        
+        var name = new PropDpName(node.Identifier.Text).GetName;
+        if (type.GetChildren<MethodDeclarationSyntax>().Any(m => m.Identifier.Text == name)) return;
+        
+        context.ReportPartialMethod(node.Identifier);
     }
     
     internal static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGetter, out bool hasSetter)

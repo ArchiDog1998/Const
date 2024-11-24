@@ -72,4 +72,10 @@
     <data name="AccessorTypePropertyDescriptorMessage" xml:space="preserve">
         <value>You can only add the accessor get or set</value>
     </data>
+    <data name="PartialMethodDescriptorTittle" xml:space="preserve">
+        <value>Please add partial method for getting this property</value>
+    </data>
+    <data name="PartialMethodDescriptorMessage" xml:space="preserve">
+        <value>Please add partial method for getting the property {0}</value>
+    </data>
 </root>

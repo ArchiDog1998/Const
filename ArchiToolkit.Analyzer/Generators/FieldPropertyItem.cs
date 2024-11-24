@@ -21,12 +21,12 @@ internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol
                             IdentifierName("Equals")))
                         .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(IdentifierName("value"))))),
                     ReturnStatement()),
-                ExpressionStatement(ConditionalAccessExpression(IdentifierName(OnNameChanging),
+                ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.OnNameChanging),
                     InvocationExpression(MemberBindingExpression(IdentifierName("Invoke"))))),
                 ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     IdentifierName(Identifier(TriviaList(), SyntaxKind.FieldKeyword, "field", "field", TriviaList())),
                     IdentifierName("value"))),
-                ExpressionStatement(ConditionalAccessExpression(IdentifierName(OnNameChanged),
+                ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.OnNameChanged),
                     InvocationExpression(MemberBindingExpression(IdentifierName("Invoke"))))))),
             _ => null
         };

@@ -8,7 +8,7 @@ namespace ArchiToolkit.Analyzer;
 
 public static class DiagnosticExtensions
 {
-    public const string PartialPropertyDiagnosticId = "AC1101";
+    public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104";
     public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
     [
         PartialPropertyDescriptor,
@@ -45,6 +45,9 @@ public static class DiagnosticExtensions
     
     private static readonly DiagnosticDescriptor AccessorTypePropertyDescriptor = CreateUsageErrorDescriptor("AC1103", 
         nameof(DiagnosticStrings.AccessorTypePropertyDescriptorTittle), nameof(DiagnosticStrings.AccessorTypePropertyDescriptorMessage));
+    
+    private static readonly DiagnosticDescriptor PartialMethodDescriptor = CreateUsageErrorDescriptor(PartialPropertyDiagnosticId, 
+        nameof(DiagnosticStrings.PartialMethodDescriptorTittle), nameof(DiagnosticStrings.PartialMethodDescriptorMessage));
 
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
@@ -63,6 +66,9 @@ public static class DiagnosticExtensions
 
     public static void ReportAccessorType(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
         => ReportDescriptor(context, AccessorTypePropertyDescriptor, syntaxNode);
+    
+    public static void ReportPartialMethod(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
+        => ReportDescriptor(context, PartialMethodDescriptor, syntaxNode);
     
     public static void ReportBody(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
         => ReportDescriptor(context, BodyPropertyDescriptor, syntaxNode);
