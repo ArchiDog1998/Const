@@ -214,23 +214,41 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType> reportAction,
         Action<SyntaxNodeAnalysisContext, SyntaxNode, ConstType, string> reportMethodAction)
     {
-        CheckChildrenSyntax<AssignmentExpressionSyntax>(s => s.Left);
-        CheckChildrenSyntax<PostfixUnaryExpressionSyntax>(s => s.Operand);
-        CheckChildrenSyntax<PrefixUnaryExpressionSyntax>(s => s.Operand);
-        CheckChildrenSyntax<InvocationExpressionSyntax>(s => s.Expression);
+        CheckChildrenSyntax<AssignmentExpressionSyntax>(s => GetAssignmentExpressionSet(s).ToArray());
+        CheckChildrenSyntax<PostfixUnaryExpressionSyntax>(s => [s.Operand]);
+        CheckChildrenSyntax<PrefixUnaryExpressionSyntax>(s => [s.Operand]);
+        CheckChildrenSyntax<InvocationExpressionSyntax>(s => [s.Expression]);
 
         return;
 
-        void CheckChildrenSyntax<T>(Func<T, ExpressionSyntax> getExpression) where T : SyntaxNode
+        static IEnumerable<ExpressionSyntax> GetAssignmentExpressionSet(AssignmentExpressionSyntax assignmentExpressionSyntax)
+        {
+            if (assignmentExpressionSyntax.Right is not AssignmentExpressionSyntax right)
+                return [assignmentExpressionSyntax.Left];
+            
+            return [assignmentExpressionSyntax.Left, ..GetAssignmentExpressionSet(right)];
+        }
+
+        void CheckChildrenSyntax<T>(Func<T, ExpressionSyntax[]> getExpression) where T : SyntaxNode
         {
             foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax))
             {
-                var name = GetFirstAccessorName(context, getExpression(statement), containThis, out var deep,
+                foreach (var expression in getExpression(statement))
+                {
+                    CheckExpression(expression, statement);
+                }
+            }
+
+            return;
+
+            void CheckExpression(ExpressionSyntax expression, T statement)
+            {
+                var name = GetFirstAccessorName(context, expression, containThis, out var deep,
                     out var isThis);
-                if (name is null) continue;
+                if (name is null) return;
 
                 var nameSymbol = context.SemanticModel.GetSymbolInfo(name).Symbol;
-                if (nameSymbol is not IPropertySymbol and not IFieldSymbol and not IParameterSymbol) continue;
+                if (nameSymbol is not IPropertySymbol and not IFieldSymbol and not IParameterSymbol) return;
 
                 int[] deeps = [deep];
                 var methodName = string.Empty;
@@ -244,7 +262,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                             SymbolEqualityComparer.Default))
                     {
                         // Skip this method. We can't edit it.
-                        continue;
+                        return;
                     }
 
                     var edition = GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
@@ -252,7 +270,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     if (edition.Length == 0)
                     {
                         //We don't need to error it, it is const always.
-                        continue;
+                        return;
                     }
 
                     deeps = [..edition.Select(i => i + deep)];
@@ -260,7 +278,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
                 var type = deeps.Aggregate<int, ConstType>(0, (current, d) => current | shouldReport(name, d, isThis));
 
-                if (type is 0) continue;
+                if (type is 0) return;
 
                 if (string.IsNullOrEmpty(methodName))
                 {
@@ -271,8 +289,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     reportMethodAction(context, name, type, methodName);
                 }
             }
-
-            return;
 
             static int[] GetConstTypeAddition(ConstType type)
             {
@@ -362,8 +378,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         return allSymbols.ToArray();
     }
-
-    private static bool HasFlag(byte value, byte flag) => (value & flag) == flag;
 
     private static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
         InvocationExpressionSyntax assignment, bool containThis, out int deep)
