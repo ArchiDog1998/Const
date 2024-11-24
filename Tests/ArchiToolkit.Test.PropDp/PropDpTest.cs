@@ -10,12 +10,12 @@ public partial class PropDpTest
 
     [PropDp]
     public partial bool Another { get; }
-    
+
     private partial bool GetAnother()
     {
-        return Test;
+        throw new NotImplementedException();
     }
-    
+
     public PropDpTest()
     {
         ClearAnother();
