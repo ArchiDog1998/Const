@@ -74,11 +74,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
     private static ConstType GetConstTypeAttributeRaw(ISymbol? symbol)
     {
-        var attr = symbol?.GetAttributes().FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is AttributeName);
+        var attr = symbol?.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is AttributeName);
         if (attr == null) return 0;
         var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
-        var by = (byte?)type.Value ?? byte.MaxValue;
-        return (ConstType)by;
+        var by = (ConstType?)type.Value ?? ConstType.All;
+        return by;
     }
 
     private static SyntaxNode? GetMethodBody(SyntaxNode? method) => method switch
@@ -221,11 +222,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         return;
 
-        static IEnumerable<ExpressionSyntax> GetAssignmentExpressionSet(AssignmentExpressionSyntax assignmentExpressionSyntax)
+        static IEnumerable<ExpressionSyntax> GetAssignmentExpressionSet(
+            AssignmentExpressionSyntax assignmentExpressionSyntax)
         {
             if (assignmentExpressionSyntax.Right is not AssignmentExpressionSyntax right)
                 return [assignmentExpressionSyntax.Left];
-            
+
             return [assignmentExpressionSyntax.Left, ..GetAssignmentExpressionSet(right)];
         }
 
@@ -323,6 +325,9 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
             if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol)
                 continue;
 
+            if (context.SemanticModel.GetSymbolInfo(name).Symbol is not IMethodSymbol)
+                continue;
+            
             if (!CantInvokeMethod(methodSymbol)) continue;
             context.ReportMethod(name, type);
         }
