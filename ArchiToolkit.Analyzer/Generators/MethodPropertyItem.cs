@@ -70,18 +70,19 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             .WithBody(
                 Block(
                     IfStatement(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(Name.LazyName),
-                            IdentifierName("IsValueCreated")),
-                        Block(
-                            SingletonList<StatementSyntax>(
-                                ExpressionStatement(
-                                    ConditionalAccessExpression(
-                                        IdentifierName(Name.OnNameChanging),
-                                        InvocationExpression(
-                                            MemberBindingExpression(
-                                                IdentifierName("Invoke")))))))),
+                        PrefixUnaryExpression(
+                            SyntaxKind.LogicalNotExpression,
+                            MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(Name.LazyName),
+                                IdentifierName("IsValueCreated"))),
+                        ReturnStatement()),
+                    ExpressionStatement(
+                        ConditionalAccessExpression(
+                            IdentifierName(Name.OnNameChanging),
+                            InvocationExpression(
+                                MemberBindingExpression(
+                                    IdentifierName("Invoke"))))),
                     ExpressionStatement(
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
@@ -89,7 +90,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                             ImplicitObjectCreationExpression()
                                 .WithArgumentList(
                                     ArgumentList(
-                                        SingletonSeparatedList<ArgumentSyntax>(
+                                        SingletonSeparatedList(
                                             Argument(
                                                 IdentifierName(Name.GetName))))))),
                     ExpressionStatement(
