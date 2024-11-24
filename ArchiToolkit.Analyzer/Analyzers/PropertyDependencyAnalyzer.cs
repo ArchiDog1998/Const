@@ -11,7 +11,7 @@ namespace ArchiToolkit.Analyzer.Analyzers;
 public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
 {
     internal const string AttributeName = "ArchiToolkit.PropDpAttribute";
-    
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticExtensions.PropDpDescriptors;
 
     public override void Initialize(AnalysisContext context)
@@ -30,7 +30,7 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
 
         if (model.GetDeclaredSymbol(node) is not { } symbol) return;
         if (!symbol.GetAttributes().Any(a => a.AttributeClass?.GetFullMetadataName() is AttributeName)) return;
-        
+
         PartialCheck(context, node);
         AccessorsCheck(context, node);
         PartialMethodCheck(context, node, model);
@@ -45,23 +45,23 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
     private static void AccessorsCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
     {
         var accessors = node.AccessorList?.Accessors;
-    
+
         if (accessors == null) return;
-    
+
         foreach (var accessor in accessors)
         {
             AccessorCheck(accessor);
         }
-    
+
         return;
-        
+
         void AccessorCheck(AccessorDeclarationSyntax accessor)
         {
             if (accessor.Body is not null)
             {
                 context.ReportBody(accessor.Body);
             }
-    
+
             if (accessor.Kind() is not SyntaxKind.GetAccessorDeclaration and not SyntaxKind.SetAccessorDeclaration)
             {
                 context.ReportAccessorType(accessor);
@@ -83,7 +83,7 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         PartialMethodCallSelfCheck();
 
         return;
-        
+
         void PartialMethodExistenceCheck()
         {
             if (method is not null) return;
@@ -94,23 +94,23 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         {
             var accessors = property.GetAccessItems()
                 .Where(i => i.HasSymbol(symbol)).ToImmutableArray();
-            
+
             if (!accessors.Any()) return;
-            
+
             var accessor = accessors.First();
-            
+
             context.ReportPartialMethodCallSelf(accessor.Expression);
         }
     }
 
-    
+
     internal static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGetter, out bool hasSetter)
     {
         hasGetter = hasSetter = false;
-            
+
         var accessors = node.AccessorList?.Accessors;
         if (accessors == null) return;
-            
+
         foreach (var accessor in accessors)
         {
             switch (accessor.Kind())

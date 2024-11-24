@@ -125,14 +125,13 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
     private IEnumerable<StatementSyntax> GetStatementsForInit()
     {
         var accessors = GetAccessItems()
-            .Where(i => !i.HasSymbol(Symbol)).ToImmutableArray();
+            .Where(i => !i.HasSymbol(Symbol) && i.ValidPropertySymbols.Any()).ToImmutableArray();
 
         return
         [
             ..accessors.Select(exp => exp.InvokeInit()),
             ReturnStatement(),
-            ..accessors.Select(exp => exp.CreateInit()),
-
+            ..accessors.Select(exp => exp.CreateInit(Name.ClearName)),
         ];
     }
 
