@@ -26,7 +26,7 @@ public class PartialMethodDependencyCodeFixer : BaseDependencyCodeFixer
                 propertyDeclaration.Type,
                 Identifier(name))
             .WithModifiers(
-                TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.PartialKeyword)))
+                TokenList(Token(SyntaxKind.PartialKeyword)))
             .WithBody(
                 Block(
                     SingletonList<StatementSyntax>(

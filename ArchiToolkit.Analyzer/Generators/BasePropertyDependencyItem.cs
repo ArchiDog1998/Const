@@ -11,7 +11,6 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
     public virtual IReadOnlyList<MemberDeclarationSyntax> GetMembers() => [CreateEvents(), CreateProperty()];
     public PropDpName Name => new(Node.Identifier.Text);
     public string TypeName => "global::" + symbol.Type.GetFullMetadataName();
-
     
     private EventFieldDeclarationSyntax CreateEvents()
     {

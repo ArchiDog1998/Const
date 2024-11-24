@@ -400,7 +400,8 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             deep++;
 
-            if (deep > 1024) return null;
+            //TODO: Find a better way to skip this loop!
+            if (deep > 32) return null;
             
             switch (exp)
             {

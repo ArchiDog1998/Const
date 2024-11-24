@@ -10,7 +10,7 @@
         <LangVersion>latest</LangVersion>
         <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RepositoryUrl>https://github.com/ArchiDog1998/Const</RepositoryUrl>
+		<RepositoryUrl>https://github.com/ArchiDog1998/ArchiToolkit</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Version>0.9.9</Version>
     </PropertyGroup>

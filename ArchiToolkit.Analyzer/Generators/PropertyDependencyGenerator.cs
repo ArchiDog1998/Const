@@ -69,7 +69,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
                         Token(SyntaxKind.VoidKeyword)),
                     Identifier(initName))
                 .WithModifiers(
-                    TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.PartialKeyword)))
+                    TokenList(Token(SyntaxKind.PartialKeyword)))
                 .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
                 .WithSemicolonToken(
                     Token(SyntaxKind.SemicolonToken));
