@@ -45,13 +45,14 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
         List<AccessorDeclarationSyntax> resultAccessors = [];
         foreach (var accessor in accessors)
         {
-            var newAccessor = UpdateAccess(accessor);
+            var newAccessor = UpdateAccess(accessor)?
+                    .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))));
             if (newAccessor is null) continue;
             resultAccessors.Add(newAccessor);
         }
 
         return node.WithType(IdentifierName(TypeName))
-            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
+            .WithAttributeLists(List<AttributeListSyntax>([]))
             .WithAccessorList(AccessorList(List(resultAccessors)));
     }
     

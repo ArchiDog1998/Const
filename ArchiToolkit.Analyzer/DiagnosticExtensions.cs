@@ -14,6 +14,7 @@ public static class DiagnosticExtensions
         PartialPropertyDescriptor,
         BodyPropertyDescriptor,
         AccessorTypePropertyDescriptor,
+        PartialMethodDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
 #endif
@@ -46,7 +47,7 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor AccessorTypePropertyDescriptor = CreateUsageErrorDescriptor("AC1103", 
         nameof(DiagnosticStrings.AccessorTypePropertyDescriptorTittle), nameof(DiagnosticStrings.AccessorTypePropertyDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor PartialMethodDescriptor = CreateUsageErrorDescriptor(PartialPropertyDiagnosticId, 
+    private static readonly DiagnosticDescriptor PartialMethodDescriptor = CreateUsageErrorDescriptor(PartialMethodDiagnosticId, 
         nameof(DiagnosticStrings.PartialMethodDescriptorTittle), nameof(DiagnosticStrings.PartialMethodDescriptorMessage));
 
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
