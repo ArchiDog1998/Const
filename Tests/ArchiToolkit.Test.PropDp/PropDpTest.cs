@@ -1,4 +1,6 @@
-﻿namespace ArchiToolkit.Test.PropDp;
+﻿using System.ComponentModel;
+
+namespace ArchiToolkit.Test.PropDp;
 
 public partial class ThirdClass
 {
@@ -39,8 +41,8 @@ public partial class PropDpTest
 
     public PropDpTest(int a) : this()
     {
-        
     }
+
 
     private partial void Initialize()
     {

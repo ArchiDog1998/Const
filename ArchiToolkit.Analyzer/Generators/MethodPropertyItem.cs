@@ -36,6 +36,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                         SingletonSeparatedList(
                             VariableDeclarator(
                                 Identifier(Name.LazyName)))))
+            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PrivateKeyword)));
@@ -67,6 +68,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PrivateKeyword)))
+            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithBody(
                 Block(
                     IfStatement(
@@ -116,23 +118,34 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     Token(SyntaxKind.VoidKeyword)),
                 Identifier(Name.InitName))
             .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
+            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithBody(Block(items));
     }
 
-    private IEnumerable<StatementSyntax> GetStatementsForInit() =>
-        GetAccessItems()
-            .Where(i => !i.PropertySymbols.Any(s => s.Equals(Symbol, SymbolEqualityComparer.Default))).SelectMany(exp => exp.CreateStatements());
+    private IEnumerable<StatementSyntax> GetStatementsForInit()
+    {
+        var accessors = GetAccessItems()
+            .Where(i => !i.HasSymbol(Symbol)).ToImmutableArray();
+
+        return
+        [
+            ..accessors.Select(exp => exp.InvokeInit()),
+            ReturnStatement(),
+            ..accessors.Select(exp => exp.CreateInit()),
+
+        ];
+    }
 
     internal IEnumerable<PropertyAccessItem> GetAccessItems()
     {
         return GetExpressionBody().Select(exp => new PropertyAccessItem(exp, model))
             .ToImmutableHashSet(new PropertyAccessItemComparer());
-        
+
         IReadOnlyList<ExpressionSyntax> GetExpressionBody()
         {
             var method = GetMethodDeclaration();
             if (method is null) return [];
-            
+
             var body = method.Body as SyntaxNode ?? method.ExpressionBody;
             if (body is null) return [];
 
