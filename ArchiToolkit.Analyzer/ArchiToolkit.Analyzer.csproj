@@ -18,6 +18,10 @@
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>DiagnosticStrings.Designer.cs</LastGenOutput>
       </EmbeddedResource>
+      <EmbeddedResource Update="Resources\CodeFixerStrings.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>CodeFixerStrings.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -25,6 +29,11 @@
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>DiagnosticStrings.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\CodeFixerStrings.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CodeFixerStrings.resx</DependentUpon>
       </Compile>
     </ItemGroup>
 </Project>

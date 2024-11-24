@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ArchiToolkit.Analyzer.Resources;
 
 namespace ArchiToolkit.Analyzer.CodeFixers;
 
@@ -12,8 +13,8 @@ public class PartialMethodDependencyCodeFixer : BaseDependencyCodeFixer
 {
     public override ImmutableArray<string> FixableDiagnosticIds => [DiagnosticExtensions.PartialMethodDiagnosticId];
 
-    public override string Tittle => "Add partial get method for the property '{0}'";
-    public override string EquivalenceKey => "Add partial get method";
+    public override string Tittle =>  CodeFixerStrings.PartialMethodFixerTittle;
+    public override string EquivalenceKey =>  CodeFixerStrings.PartialMethodFixerEquivalenceKey;
 
     protected override Task<Solution> AddPartialAsync(Document document,
         SyntaxNode root,

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ArchiToolkit.Analyzer.Resources;
 
 namespace ArchiToolkit.Analyzer.CodeFixers;
 
@@ -11,8 +11,8 @@ namespace ArchiToolkit.Analyzer.CodeFixers;
 public class PartialPropertyDependencyCodeFixer : BaseDependencyCodeFixer
 {
     public override ImmutableArray<string> FixableDiagnosticIds  => [DiagnosticExtensions.PartialPropertyDiagnosticId];
-    public override string Tittle => "Add partial keyword for the property '{0}'";
-    public override string EquivalenceKey => "Add partial keyword";
+    public override string Tittle => CodeFixerStrings.PartialPropertyFixerTittle;
+    public override string EquivalenceKey =>  CodeFixerStrings.PartialPropertyFixerEquivalenceKey;
 
     protected override Task<Solution> AddPartialAsync(Document document,
         SyntaxNode root,

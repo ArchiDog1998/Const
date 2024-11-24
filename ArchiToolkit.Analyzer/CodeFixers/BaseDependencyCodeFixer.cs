@@ -25,9 +25,8 @@ public abstract class BaseDependencyCodeFixer : CodeFixProvider
 
         if (declaration is null) return;
 
-
         context.RegisterCodeFix(
-            CodeAction.Create( //TODO: i18n for this!
+            CodeAction.Create(
                 title: string.Format(Tittle, declaration.Identifier.Text),
                 createChangedSolution: _ => AddPartialAsync(context.Document, root!, declaration),
                 equivalenceKey: EquivalenceKey),
