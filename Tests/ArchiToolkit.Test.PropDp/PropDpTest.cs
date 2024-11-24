@@ -1,9 +1,18 @@
 ﻿namespace ArchiToolkit.Test.PropDp;
 
+public partial class ThirdClass
+{
+    [PropDp]
+    public partial int Item { get; set; }
+}
+
 public partial class SubClass
 {
     [PropDp]
     public partial int Item { get; set; }
+    
+    [PropDp]
+    public partial ThirdClass Third { get; set; }
     
     public void TestMethod(){
     }
@@ -22,28 +31,18 @@ public partial class PropDpTest
 
     private partial bool GetAnother()
     {
-        var a = Another;
+        //var a = Another;
         Math.Max(AnotherOne, 8);
-        var b =this.Test.Item;
+        var b = this.Test.Item;
         return Test.Item > 0;
     }
 
-    public PropDpTest()
+    public PropDpTest(int a) : this()
     {
-        ClearAnother();
-
-        OnTestChanging += () =>
-        {
-            Test.OnItemChanged -= ClearAnother;
-        };
-        OnTestChanged += () =>
-        {
-            ClearAnother();
-            Test.OnItemChanged += ClearAnother;
-        };
-
-        Test = new();
+        
     }
-    
 
+    private partial void Initialize()
+    {
+    }
 }

@@ -120,11 +120,13 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
     }
 
     private IEnumerable<StatementSyntax> GetStatementsForInit() =>
-        GetAccessItems().SelectMany(exp => exp.CreateStatements());
+        GetAccessItems()
+            .Where(i => !i.PropertySymbols.Any(s => s.Equals(Symbol, SymbolEqualityComparer.Default))).SelectMany(exp => exp.CreateStatements());
 
-    internal ImmutableHashSet<PropertyAccessItem> GetAccessItems()
+    internal IEnumerable<PropertyAccessItem> GetAccessItems()
     {
-        return GetExpressionBody().Select(exp => new PropertyAccessItem(exp, model)).ToImmutableHashSet(new PropertyAccessItemComparer());
+        return GetExpressionBody().Select(exp => new PropertyAccessItem(exp, model))
+            .ToImmutableHashSet(new PropertyAccessItemComparer());
         
         IReadOnlyList<ExpressionSyntax> GetExpressionBody()
         {

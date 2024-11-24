@@ -92,8 +92,6 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
 
         void PartialMethodCallSelfCheck()
         {
-            if (method is null) return;
-
             var accessors = property.GetAccessItems()
                 .Where(i => i.PropertySymbols.Any(s => s.Equals(symbol, SymbolEqualityComparer.Default))).ToImmutableArray();
             
