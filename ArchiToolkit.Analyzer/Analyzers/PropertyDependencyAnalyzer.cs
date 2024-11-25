@@ -29,17 +29,24 @@ public class PropertyDependencyAnalyzer : DependencyAnalyzer
         if (model.GetDeclaredSymbol(node) is not { } symbol) return;
         
         var property = new MethodPropertyItem(node, symbol, model, hasSetter);
-        var method = property.GetMethodDeclaration();
         
         PartialMethodExistenceCheck();
         PartialMethodCallSelfCheck();
+        PartialSetMethodExistenceCheck();
         
         return;
         
         void PartialMethodExistenceCheck()
         {
-            if (method is not null) return;
+            if (property.GetMethodDeclaration() is not null) return;
             context.ReportPartialMethod(node.Identifier);
+        }
+
+        void PartialSetMethodExistenceCheck()
+        {
+            if (!hasSetter) return;
+            if (property.HasSetMethodDeclaration()) return;
+            context.ReportPartialSetMethod(node.Identifier);
         }
         
         void PartialMethodCallSelfCheck()

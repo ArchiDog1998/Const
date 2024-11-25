@@ -73,7 +73,6 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PartialKeyword)))
-            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithParameterList(
                 ParameterList(
                     SingletonSeparatedList(
@@ -250,6 +249,8 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             };
         }
     }
+    
+    internal bool HasSetMethodDeclaration() => FindMethodDeclaration(Name.SetName) is not null;
 
     internal MethodDeclarationSyntax? GetMethodDeclaration() => FindMethodDeclaration(Name.GetName);
     

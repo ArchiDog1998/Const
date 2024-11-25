@@ -258,6 +258,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can add partial method for setting the property &apos;{0}&apos;.
+        /// </summary>
+        internal static string PartialSetMethodDescriptorMessage {
+            get {
+                return ResourceManager.GetString("PartialSetMethodDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can add partial method for setting this property.
+        /// </summary>
+        internal static string PartialSetMethodDescriptorTittle {
+            get {
+                return ResourceManager.GetString("PartialSetMethodDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t add the static to this property when you add the attribute Prop..
         /// </summary>
         internal static string PartialStaticDescriptorMessage {

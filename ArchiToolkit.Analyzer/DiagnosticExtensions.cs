@@ -8,7 +8,7 @@ namespace ArchiToolkit.Analyzer;
 
 public static class DiagnosticExtensions
 {
-    public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104";
+    public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104", PartialMethodSetDiagnosticId = "AC1107";
     
     public static ImmutableArray<DiagnosticDescriptor> BaseDpDescriptors =>
     [
@@ -24,6 +24,7 @@ public static class DiagnosticExtensions
     public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
     [
         PartialMethodDescriptor,
+        PartialSetMethodDescriptor,
         PartialMethodCallSelfDescriptor,
     ];
     
@@ -42,8 +43,8 @@ public static class DiagnosticExtensions
 
     #region Usage Diagnotic
     
-    private static DiagnosticDescriptor CreateUsageErrorDescriptor(string id, string title, string messageFormat) 
-        => new(id, Local(title), Local(messageFormat), "Usage", DiagnosticSeverity.Error, true);
+    private static DiagnosticDescriptor CreateUsageErrorDescriptor(string id, string title, string messageFormat, DiagnosticSeverity severity = DiagnosticSeverity.Error) 
+        => new(id, Local(title), Local(messageFormat), "Usage", severity, true);
     
     private static readonly DiagnosticDescriptor PartialPropertyDescriptor = CreateUsageErrorDescriptor(PartialPropertyDiagnosticId, 
         nameof(DiagnosticStrings.PartialPropertyDescriptorTittle), nameof(DiagnosticStrings.PartialPropertyDecriptorMesage));
@@ -62,6 +63,9 @@ public static class DiagnosticExtensions
     
     private static readonly DiagnosticDescriptor PartialStaticDescriptor = CreateUsageErrorDescriptor("AC1106", 
         nameof(DiagnosticStrings.PartialStaticDescriptorTittle), nameof(DiagnosticStrings.PartialStaticDescriptorMessage));
+    
+    private static readonly DiagnosticDescriptor PartialSetMethodDescriptor = CreateUsageErrorDescriptor(PartialMethodSetDiagnosticId, 
+        nameof(DiagnosticStrings.PartialSetMethodDescriptorTittle), nameof(DiagnosticStrings.PartialSetMethodDescriptorMessage), DiagnosticSeverity.Warning);
     
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
@@ -86,6 +90,9 @@ public static class DiagnosticExtensions
     
     public static void ReportPartialMethod(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
         => ReportDescriptor(context, PartialMethodDescriptor, syntaxNode);
+    
+    public static void ReportPartialSetMethod(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
+        => ReportDescriptor(context, PartialSetMethodDescriptor, syntaxNode);
     
     public static void ReportPartialMethodCallSelf(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
         => ReportDescriptor(context, PartialMethodCallSelfDescriptor, syntaxNode);

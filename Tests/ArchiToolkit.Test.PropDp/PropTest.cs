@@ -28,6 +28,11 @@ internal partial class PropTest
     [PropDp]
     public partial int Add { get; set; }
 
+    partial void SetAdd(int value)
+    {
+        throw new NotImplementedException();
+    }
+
     private partial int GetAdd() => SetValue(SetValue(SetValue((int)(Test.Test.X + Test.Test.Y)))) ;
 
     [Const]

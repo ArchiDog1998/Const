@@ -90,4 +90,10 @@
     <data name="PartialStaticDescriptorMessage" xml:space="preserve">
         <value>Don't add the static to this property when you add the attribute Prop.</value>
     </data>
+    <data name="PartialSetMethodDescriptorTittle" xml:space="preserve">
+        <value>You can add partial method for setting this property</value>
+    </data>
+    <data name="PartialSetMethodDescriptorMessage" xml:space="preserve">
+        <value>You can add partial method for setting the property '{0}'</value>
+    </data>
 </root>
