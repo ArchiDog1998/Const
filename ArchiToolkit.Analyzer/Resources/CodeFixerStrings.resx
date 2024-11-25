@@ -30,4 +30,10 @@
     <data name="PartialMethodFixerEquivalenceKey" xml:space="preserve">
         <value>Add partial get method</value>
     </data>
+    <data name="PartialSetMethodFixerTittle" xml:space="preserve">
+        <value>Add partial set method for the property '{0}'</value>
+    </data>
+    <data name="PartialSetMethodFixerEquivalenceKey" xml:space="preserve">
+        <value>Add partial set method</value>
+    </data>
 </root>

@@ -94,5 +94,23 @@ namespace ArchiToolkit.Analyzer.Resources {
                 return ResourceManager.GetString("PartialPropertyFixerTittle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add partial set method.
+        /// </summary>
+        internal static string PartialSetMethodFixerEquivalenceKey {
+            get {
+                return ResourceManager.GetString("PartialSetMethodFixerEquivalenceKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add partial set method for the property &apos;{0}&apos;.
+        /// </summary>
+        internal static string PartialSetMethodFixerTittle {
+            get {
+                return ResourceManager.GetString("PartialSetMethodFixerTittle", resourceCulture);
+            }
+        }
     }
 }

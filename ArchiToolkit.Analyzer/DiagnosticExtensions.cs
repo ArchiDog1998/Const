@@ -8,7 +8,7 @@ namespace ArchiToolkit.Analyzer;
 
 public static class DiagnosticExtensions
 {
-    public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104", PartialMethodSetDiagnosticId = "AC1107";
+    public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104", PartialSetMethodDiagnosticId = "AC1107";
     
     public static ImmutableArray<DiagnosticDescriptor> BaseDpDescriptors =>
     [
@@ -64,7 +64,7 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor PartialStaticDescriptor = CreateUsageErrorDescriptor("AC1106", 
         nameof(DiagnosticStrings.PartialStaticDescriptorTittle), nameof(DiagnosticStrings.PartialStaticDescriptorMessage));
     
-    private static readonly DiagnosticDescriptor PartialSetMethodDescriptor = CreateUsageErrorDescriptor(PartialMethodSetDiagnosticId, 
+    private static readonly DiagnosticDescriptor PartialSetMethodDescriptor = CreateUsageErrorDescriptor(PartialSetMethodDiagnosticId, 
         nameof(DiagnosticStrings.PartialSetMethodDescriptorTittle), nameof(DiagnosticStrings.PartialSetMethodDescriptorMessage), DiagnosticSeverity.Warning);
     
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",

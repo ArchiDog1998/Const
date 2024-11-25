@@ -30,7 +30,7 @@ internal partial class PropTest
 
     partial void SetAdd(int value)
     {
-        throw new NotImplementedException();
+        this.Test.X = value;
     }
 
     private partial int GetAdd() => SetValue(SetValue(SetValue((int)(Test.Test.X + Test.Test.Y)))) ;
