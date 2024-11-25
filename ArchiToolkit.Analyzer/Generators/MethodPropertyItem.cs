@@ -202,6 +202,10 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
         {
             return expression switch
             {
+                ObjectCreationExpressionSyntax creation =>
+                [
+                    ..creation.ArgumentList?.Arguments.SelectMany(arg => GetMemberAccessFirst(arg.Expression)) ?? [],
+                ],
                 InvocationExpressionSyntax invocation =>
                 [
                     ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccessFirst(arg.Expression))
