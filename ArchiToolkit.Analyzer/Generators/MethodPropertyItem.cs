@@ -89,7 +89,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                                 ReturnStatement()),
                             ExpressionStatement(
                                 ConditionalAccessExpression(
-                                    IdentifierName(Name.OnNameChanging),
+                                    IdentifierName(Name.NameChanging),
                                     InvocationExpression(
                                         MemberBindingExpression(
                                             IdentifierName("Invoke"))))))),
@@ -105,7 +105,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                                                 IdentifierName(Name.GetName))))))),
                     ExpressionStatement(
                         ConditionalAccessExpression(
-                            IdentifierName(Name.OnNameChanged),
+                            IdentifierName(Name.NameChanged),
                             InvocationExpression(
                                 MemberBindingExpression(
                                     IdentifierName("Invoke")))))));

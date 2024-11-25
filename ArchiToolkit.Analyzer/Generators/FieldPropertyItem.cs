@@ -52,7 +52,7 @@ internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol
                                 ReturnStatement()),
                             ExpressionStatement(
                                 ConditionalAccessExpression(
-                                    IdentifierName(Name.OnNameChanging),
+                                    IdentifierName(Name.NameChanging),
                                     InvocationExpression(
                                         MemberBindingExpression(
                                             IdentifierName("Invoke"))))))),
@@ -69,7 +69,7 @@ internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol
                             IdentifierName("value"))),
                     ExpressionStatement(
                         ConditionalAccessExpression(
-                            IdentifierName(Name.OnNameChanged),
+                            IdentifierName(Name.NameChanged),
                             InvocationExpression(
                                 MemberBindingExpression(
                                     IdentifierName("Invoke"))))))),
@@ -83,13 +83,13 @@ internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol
                                 IdentifierName("Equals")))
                             .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(IdentifierName("value"))))),
                         ReturnStatement()),
-                    ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.OnNameChanging),
+                    ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanging),
                         InvocationExpression(MemberBindingExpression(IdentifierName("Invoke"))))),
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(
                             Identifier(TriviaList(), SyntaxKind.FieldKeyword, "field", "field", TriviaList())),
                         IdentifierName("value"))),
-                    ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.OnNameChanged),
+                    ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanged),
                         InvocationExpression(MemberBindingExpression(IdentifierName("Invoke"))))))),
             _ => null
         };

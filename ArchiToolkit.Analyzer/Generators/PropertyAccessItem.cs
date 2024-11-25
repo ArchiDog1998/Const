@@ -129,12 +129,12 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanging),
+                    IdentifierName(leading + name.NameChanging),
                     IdentifierName(Changing + index))),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanged),
+                    IdentifierName(leading + name.NameChanged),
                     IdentifierName(Changed + index))),
             ExpressionStatement(
                 InvocationExpression(
@@ -152,22 +152,22 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanging),
+                    IdentifierName(leading + name.NameChanging),
                     IdentifierName(Changing + index))),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanged),
+                    IdentifierName(leading + name.NameChanged),
                     IdentifierName(Changed + index))),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.AddAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanging),
+                    IdentifierName(leading + name.NameChanging),
                     IdentifierName(Changing + index))),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.AddAssignmentExpression,
-                    IdentifierName(leading + name.OnNameChanged),
+                    IdentifierName(leading + name.NameChanged),
                     IdentifierName(Changed + index))),
             ExpressionStatement(
                 InvocationExpression(

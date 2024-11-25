@@ -23,10 +23,10 @@ public abstract class BasePropertyDependencyItem(PropertyDeclarationSyntax node,
                             new SyntaxNodeOrToken[]
                             {
                                 VariableDeclarator(
-                                    Identifier(Name.OnNameChanged)),
+                                    Identifier(Name.NameChanged)),
                                 Token(SyntaxKind.CommaToken),
                                 VariableDeclarator(
-                                    Identifier(Name.OnNameChanging))
+                                    Identifier(Name.NameChanging))
                             })))
             .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
             .WithModifiers(

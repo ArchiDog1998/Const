@@ -3,8 +3,8 @@
 public readonly struct PropDpName(string name)
 {
     private string Name => name;
-    public string OnNameChanged => $"On{Name}Changed";
-    public string OnNameChanging => $"On{Name}Changing";
+    public string NameChanged => $"{Name}Changed";
+    public string NameChanging => $"{Name}Changing";
     public string ClearName => "Clear" + Name;
     public string GetName => "Get" + Name;
     public string LazyName => "_" + Name;
