@@ -10,9 +10,9 @@ public class PropertyAccessItemComparer : IEqualityComparer<PropertyAccessItem>
 {
     public bool Equals(PropertyAccessItem x, PropertyAccessItem y)
     {
-        if (x.PropertySymbols.Count != y.PropertySymbols.Count) return false;
+        if (x.ValidPropertySymbols.Count != y.ValidPropertySymbols.Count) return false;
 
-        return !x.PropertySymbols.Where((t, i) => !t.Equals(y.PropertySymbols[i], SymbolEqualityComparer.Default))
+        return !x.ValidPropertySymbols.Where((t, i) => !t.Equals(y.ValidPropertySymbols[i], SymbolEqualityComparer.Default))
             .Any();
     }
 
@@ -28,7 +28,7 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
 
     public ExpressionSyntax Expression { get; } = expression;
 
-    public string InitName => "Init_" + string.Join("_", PropertySymbols.Select(i => i.Name.ToString()));
+    public string InitName => "Init_" + string.Join("_", ValidPropertySymbols.Select(i => i.Name.ToString()));
 
     public IReadOnlyList<IPropertySymbol> PropertySymbols => _list.Value;
 
@@ -48,7 +48,7 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
     public bool HasSymbol(IPropertySymbol symbol)
         => PropertySymbols.Any(s => s.Equals(symbol, SymbolEqualityComparer.Default));
 
-    public IEnumerable<IPropertySymbol> ValidPropertySymbols => PropertySymbols.TakeWhile(IsPropDpProperty);
+    public IReadOnlyList<IPropertySymbol> ValidPropertySymbols => PropertySymbols.TakeWhile(IsPropDpProperty).ToImmutableArray();
 
     public StatementSyntax InvokeInit() => ExpressionStatement(InvocationExpression(IdentifierName(InitName)));
 
