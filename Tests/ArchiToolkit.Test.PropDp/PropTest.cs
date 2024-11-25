@@ -13,7 +13,7 @@ internal partial class SubTest
     [PropDp]
     public partial Vector2 Test { get; }
 
-    private partial Vector2 GetTest()
+    private partial Vector2 _GetTest()
     {
         var result = new Vector2(X, Y);
         return result;
@@ -28,23 +28,23 @@ internal partial class PropTest
     [PropDp]
     public partial SubTest TestRef { get; set; }
 
-    partial void SetTestRef(SubTest value)
+    partial void _SetTestRef(SubTest value)
     {
         throw new NotImplementedException();
     }
 
-    private partial SubTest GetTestRef() => new();
+    private partial SubTest _GetTestRef() => new();
 
     [PropDp]
 
     public partial int Add { get; set; }
 
-    partial void SetAdd(int value)
+    partial void _SetAdd(int value)
     {
         this.Test.X = value;
     }
 
-    private partial int GetAdd() => SetValue(SetValue(SetValue((int)(Test.Test.X + Test.Test.Y)))) ;
+    private partial int _GetAdd() => SetValue(SetValue(SetValue((int)(Test.Test.X + Test.Test.Y)))) ;
 
     [Const]
     private int GetValue() => (int)Test.Test.X + 1;
