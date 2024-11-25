@@ -432,6 +432,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     exp =invocation.Expression;
                     break;
                 
+                case ParenthesizedExpressionSyntax parenthesized:
+                    exp = parenthesized.Expression;
+                    break;
+                
                 case BaseObjectCreationExpressionSyntax:
                 case AnonymousObjectCreationExpressionSyntax:
                     return null;
