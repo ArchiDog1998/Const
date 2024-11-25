@@ -44,8 +44,57 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
         {
             SaveMembers(ctx, grp.ToArray());
         }
+        
+        foreach (var grp in props.OfType<FieldPropertyItem>()
+                     .GroupBy(p => p.Symbol.Type, SymbolEqualityComparer.Default))
+        {
+            SaveMembers(ctx, grp.ToArray());
+        }
     }
 
+    private static void SaveMembers(SourceProductionContext ctx, FieldPropertyItem[] methodItems)
+    {
+        if (methodItems.Length == 0) return;
+        var node = methodItems[0].Node;
+        var type = node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        if (type is null) return;
+
+        var changing = EventFieldDeclaration(
+                VariableDeclaration(
+                        NullableType(
+                            IdentifierName("global::System.ComponentModel.PropertyChangingEventHandler")))
+                    .WithVariables(
+                        SingletonSeparatedList(
+                            VariableDeclarator(
+                                Identifier("PropertyChanging")))))
+            .WithModifiers(
+                TokenList(
+                    Token(SyntaxKind.PublicKeyword)));
+        
+        var changed = EventFieldDeclaration(
+                VariableDeclaration(
+                        NullableType(
+                            IdentifierName("global::System.ComponentModel.PropertyChangedEventHandler")))
+                    .WithVariables(
+                        SingletonSeparatedList(
+                            VariableDeclarator(
+                                Identifier("PropertyChanged")))))
+            .WithModifiers(
+                TokenList(
+                    Token(SyntaxKind.PublicKeyword)));
+
+        SaveMembers(ctx, [changing, changed], type, $"{methodItems[0].Symbol.GetFullMetadataName()}.Type.Notify", BaseList(
+            SeparatedList<BaseTypeSyntax>(
+                new SyntaxNodeOrToken[]
+                {
+                    SimpleBaseType(
+                        IdentifierName("global::System.ComponentModel.INotifyPropertyChanging")),
+                    Token(SyntaxKind.CommaToken),
+                    SimpleBaseType(
+                        IdentifierName("global::System.ComponentModel.INotifyPropertyChanged"))
+                })));
+    }
+    
     private static void SaveMembers(SourceProductionContext ctx, MethodPropertyItem[] methodItems)
     {
         const string initName = "Initialize";
@@ -59,7 +108,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
             ExpressionStatement(InvocationExpression(IdentifierName(n))));
         var ctr = Ctor(type, invokes);
         var symbol = methodItems[0].Symbol;
-        SaveMembers(ctx, [InitializeMethod(), ctr], type, $"{symbol.GetFullMetadataName()}.Ctor");
+        SaveMembers(ctx, [InitializeMethod(), ctr], type, $"{symbol.GetFullMetadataName()}.Type.Ctor");
         return;
 
         static MethodDeclarationSyntax InitializeMethod()
@@ -104,16 +153,20 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
     }
 
     private static void SaveMembers(SourceProductionContext ctx, IReadOnlyList<MemberDeclarationSyntax> members,
-        TypeDeclarationSyntax type, string name)
+        TypeDeclarationSyntax type, string name, BaseListSyntax? baseListSyntax = null)
     {
         var nameSpace = type.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
 
         if (nameSpace is null) return;
+        
+        if (baseListSyntax is not null)
+        {
+            type = type.WithBaseList(baseListSyntax);
+        }
 
         var code = NamespaceDeclaration(nameSpace.Name.ToFullString())
             .WithMembers(
-                SingletonList<MemberDeclarationSyntax>(ClassDeclaration(type.Identifier.Text)
-                    .WithModifiers(type.Modifiers)
+                SingletonList<MemberDeclarationSyntax>(type
                     .WithMembers(List(members))))
             .NodeToString();
 
