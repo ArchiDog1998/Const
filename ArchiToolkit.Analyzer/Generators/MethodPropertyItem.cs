@@ -5,11 +5,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArchiToolkit.Analyzer.Generators;
 
-public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol, SemanticModel model, bool hasSet)
+public class MethodPropertyItem(
+    PropertyDeclarationSyntax node,
+    IPropertySymbol symbol,
+    SemanticModel model,
+    bool hasSet)
     : BasePropertyDependencyItem(node, symbol)
 {
     public override IReadOnlyList<MemberDeclarationSyntax> GetMembers() =>
-        [..base.GetMembers(), GetLazyField(), ..AccessMethods(), ClearMethod(), InitMethod()];
+        [..base.GetMembers(), GetLazyField(), ..AccessMethods(), ..ClearModifyMethod(), InitMethod()];
 
     protected override AccessorDeclarationSyntax UpdateAccess(AccessorDeclarationSyntax accessor)
     {
@@ -19,7 +23,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 ArrowExpressionClause(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     IdentifierName(Name.LazyName), IdentifierName("Value")))),
             SyntaxKind.SetAccessorDeclaration => accessor.WithExpressionBody(
-                ArrowExpressionClause(InvocationExpression(IdentifierName(Name.SetName)) .WithArgumentList(
+                ArrowExpressionClause(InvocationExpression(IdentifierName(Name.SetName)).WithArgumentList(
                     ArgumentList(
                         SingletonSeparatedList(
                             Argument(
@@ -48,7 +52,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     Token(SyntaxKind.PrivateKeyword)));
     }
 
-    private IEnumerable<MethodDeclarationSyntax>  AccessMethods()
+    private IEnumerable<MethodDeclarationSyntax> AccessMethods()
     {
         var getMethod = MethodDeclaration(
                 IdentifierName(TypeName),
@@ -65,11 +69,18 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 Token(SyntaxKind.SemicolonToken));
 
         if (!hasSet) return [getMethod];
-        
-        var setMethod = MethodDeclaration(
+
+        var setMethod = SetOrModifyMethod(Name.SetName);
+
+        return [getMethod, setMethod];
+    }
+
+    private MethodDeclarationSyntax SetOrModifyMethod(string methodName)
+    {
+        return MethodDeclaration(
                 PredefinedType(
                     Token(SyntaxKind.VoidKeyword)),
-                Identifier(Name.SetName))
+                Identifier(methodName))
             .WithModifiers(
                 TokenList(
                     Token(SyntaxKind.PartialKeyword)))
@@ -82,13 +93,43 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                                 IdentifierName(TypeName)))))
             .WithSemicolonToken(
                 Token(SyntaxKind.SemicolonToken));
-        
-        return [getMethod, setMethod];
     }
 
-    private MethodDeclarationSyntax ClearMethod()
+    private IEnumerable<MethodDeclarationSyntax> ClearModifyMethod()
     {
-        return MethodDeclaration(
+        IEnumerable<StatementSyntax> addition = [];
+        List<MethodDeclarationSyntax> result = [];
+        if (Symbol.Type.IsReferenceType)
+        {
+            result.Add(SetOrModifyMethod(Name.ModifyName));
+        }
+
+        if (HasModifyMethodDeclaration())
+        {
+            addition =
+            [
+                ExpressionStatement(
+                    InvocationExpression(
+                            IdentifierName(Name.ModifyName))
+                        .WithArgumentList(
+                            ArgumentList(
+                                SingletonSeparatedList(
+                                    Argument(
+                                        MemberAccessExpression(
+                                            SyntaxKind.SimpleMemberAccessExpression,
+                                            IdentifierName(Name.LazyName),
+                                            IdentifierName("Value"))))))),
+                ExpressionStatement(
+                    ConditionalAccessExpression(
+                        IdentifierName(Name.NameChanged),
+                        InvocationExpression(
+                            MemberBindingExpression(
+                                IdentifierName("Invoke"))))),
+                ReturnStatement()
+            ];
+        }
+
+        result.Add(MethodDeclaration(
                 PredefinedType(
                     Token(SyntaxKind.VoidKeyword)),
                 Identifier(Name.ClearName))
@@ -106,20 +147,24 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                                     LiteralExpression(
                                         SyntaxKind.NullLiteralExpression)))),
                         Block(
-                            IfStatement(
-                                PrefixUnaryExpression(
-                                    SyntaxKind.LogicalNotExpression,
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        IdentifierName(Name.LazyName),
-                                        IdentifierName("IsValueCreated"))),
-                                ReturnStatement()),
-                            ExpressionStatement(
-                                ConditionalAccessExpression(
-                                    IdentifierName(Name.NameChanging),
-                                    InvocationExpression(
-                                        MemberBindingExpression(
-                                            IdentifierName("Invoke"))))))),
+                            (StatementSyntax[])
+                            [
+                                IfStatement(
+                                    PrefixUnaryExpression(
+                                        SyntaxKind.LogicalNotExpression,
+                                        MemberAccessExpression(
+                                            SyntaxKind.SimpleMemberAccessExpression,
+                                            IdentifierName(Name.LazyName),
+                                            IdentifierName("IsValueCreated"))),
+                                    ReturnStatement()),
+                                ExpressionStatement(
+                                    ConditionalAccessExpression(
+                                        IdentifierName(Name.NameChanging),
+                                        InvocationExpression(
+                                            MemberBindingExpression(
+                                                IdentifierName("Invoke"))))),
+                                ..addition
+                            ])),
                     ExpressionStatement(
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
@@ -135,7 +180,9 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                             IdentifierName(Name.NameChanged),
                             InvocationExpression(
                                 MemberBindingExpression(
-                                    IdentifierName("Invoke")))))));
+                                    IdentifierName("Invoke"))))))));
+
+        return result;
     }
 
     private MethodDeclarationSyntax InitMethod()
@@ -189,21 +236,23 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 foreach (var m in methods)
                 {
                     result = result.Concat(GetExpressions(m, out var invocations));
-                
+
                     next.AddRange(invocations.Select(invocation => model.GetSymbolInfo(invocation).Symbol)
                         .OfType<ISymbol>()
                         .Where(s => s.ContainingSymbol.Equals(Symbol.ContainingSymbol, SymbolEqualityComparer.Default))
                         .Select(s => FindMethodDeclaration(s.Name))
                         .OfType<MethodDeclarationSyntax>());
                 }
+
                 methods = next;
             }
-            
+
             return result.ToImmutableArray();
         }
     }
-    
-    private static IReadOnlyList<ExpressionSyntax> GetExpressions(MethodDeclarationSyntax method, out InvocationExpressionSyntax[] invocations)
+
+    private static IReadOnlyList<ExpressionSyntax> GetExpressions(MethodDeclarationSyntax method,
+        out InvocationExpressionSyntax[] invocations)
     {
         var body = method.Body as SyntaxNode ?? method.ExpressionBody;
         if (body is null)
@@ -249,11 +298,13 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             };
         }
     }
-    
+
+    private bool HasModifyMethodDeclaration() => FindMethodDeclaration(Name.ModifyName) is not null;
+
     internal bool HasSetMethodDeclaration() => FindMethodDeclaration(Name.SetName) is not null;
 
     internal MethodDeclarationSyntax? GetMethodDeclaration() => FindMethodDeclaration(Name.GetName);
-    
+
     private MethodDeclarationSyntax? FindMethodDeclaration(string name)
     {
         var type = Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();

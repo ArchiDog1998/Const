@@ -8,6 +8,7 @@ public readonly struct PropDpName(string name)
     public string ClearName => "Clear" + Name;
     public string GetName => "Get" + Name;
     public string SetName => "Set" + Name;
+    public string ModifyName => "Modify" + Name;
     public string LazyName => "_" + Name;
     public string InitName => "Init" + Name;
 }

@@ -26,6 +26,16 @@ internal partial class PropTest
     public partial SubTest Test { get; set; }
     
     [PropDp]
+    public partial SubTest TestRef { get; set; }
+
+    private partial SubTest GetTestRef() => new();
+    
+    partial void ModifyTestRef(SubTest value)
+    {
+        throw new NotImplementedException();
+    }
+    [PropDp]
+
     public partial int Add { get; set; }
 
     partial void SetAdd(int value)
