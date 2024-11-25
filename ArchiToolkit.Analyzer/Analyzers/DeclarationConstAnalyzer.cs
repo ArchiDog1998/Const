@@ -424,6 +424,14 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case SimpleNameSyntax name:
                     return name;
                 
+                case AwaitExpressionSyntax await:
+                    exp = await.Expression;
+                    break;
+                
+                case InvocationExpressionSyntax invocation:
+                    exp =invocation.Expression;
+                    break;
+                
                 default:
                     context.ReportCantFind(exp);
                     return null;
