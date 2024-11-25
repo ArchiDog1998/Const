@@ -432,6 +432,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     exp =invocation.Expression;
                     break;
                 
+                case BaseObjectCreationExpressionSyntax:
+                case AnonymousObjectCreationExpressionSyntax:
+                    return null;
+                
                 default:
                     context.ReportCantFind(exp);
                     return null;
