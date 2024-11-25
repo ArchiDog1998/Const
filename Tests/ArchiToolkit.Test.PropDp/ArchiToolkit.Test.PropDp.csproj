@@ -12,4 +12,8 @@
 		<ProjectReference Include="..\..\ArchiToolkit\ArchiToolkit.csproj" />
 		<ProjectReference Include="..\..\ArchiToolkit.Analyzer\ArchiToolkit.Analyzer.csproj" OutputItemType="Analyzer" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="UnitsNet" Version="5.60.0" />
+	</ItemGroup>
 </Project>

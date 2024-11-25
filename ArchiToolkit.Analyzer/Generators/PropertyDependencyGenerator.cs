@@ -41,24 +41,23 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
         }
         
         foreach (var grp in props.OfType<MethodPropertyItem>()
-                     .GroupBy(p => p.Symbol.Type, SymbolEqualityComparer.Default))
+                     .GroupBy(i => i.Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault() ))
         {
-            SaveMembers(ctx, grp.ToArray());
+            SaveMembers(ctx, grp);
         }
         
         foreach (var grp in props.OfType<FieldPropertyItem>()
-                     .GroupBy(p => p.Symbol.Type, SymbolEqualityComparer.Default))
+                     .GroupBy(i => i.Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault() ))
         {
-            SaveMembers(ctx, grp.ToArray());
+            SaveMembers(ctx, grp);
         }
     }
 
-    private static void SaveMembers(SourceProductionContext ctx, FieldPropertyItem[] methodItems)
+    private static void SaveMembers(SourceProductionContext ctx, IGrouping<TypeDeclarationSyntax, FieldPropertyItem> item)
     {
-        if (methodItems.Length == 0) return;
-        var node = methodItems[0].Node;
-        var type = node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        var type = item.Key;
         if (type is null) return;
+        if (!item.Any()) return;
 
         var changing = EventFieldDeclaration(
                 VariableDeclaration(
@@ -84,7 +83,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
                 TokenList(
                     Token(SyntaxKind.PublicKeyword)));
 
-        SaveMembers(ctx, [changing, changed], type, $"{methodItems[0].Symbol.GetFullMetadataName()}.Type.Notify", BaseList(
+        SaveMembers(ctx, [changing, changed], type, $"{item.First().Symbol.GetFullMetadataName()}.Type.Notify", BaseList(
             SeparatedList<BaseTypeSyntax>(
                 new SyntaxNodeOrToken[]
                 {
@@ -96,19 +95,19 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
                 })));
     }
     
-    private static void SaveMembers(SourceProductionContext ctx, MethodPropertyItem[] methodItems)
+    private static void SaveMembers(SourceProductionContext ctx, IGrouping<TypeDeclarationSyntax, MethodPropertyItem> item)
     {
         const string initName = "Initialize";
         
-        if (methodItems.Length == 0) return;
-        var node = methodItems[0].Node;
-        var type = node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+        var type = item.Key;
         if (type is null) return;
-
-        var invokes = methodItems.Select(i => i.Name.InitName).Append(initName).Select(n =>
+        
+        if(!item.Any()) return;
+        
+        var invokes = item.Select(i => i.Name.InitName).Append(initName).Select(n =>
             ExpressionStatement(InvocationExpression(IdentifierName(n))));
         var ctr = Ctor(type, invokes);
-        var symbol = methodItems[0].Symbol;
+        var symbol = item.First().Symbol;
         SaveMembers(ctx, [InitializeMethod(), ctr], type, $"{symbol.GetFullMetadataName()}.Type.Ctor");
         return;
 
