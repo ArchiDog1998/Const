@@ -5,13 +5,13 @@ using ArchiToolkit.Test.PropDp;
 var item = new PropTest();
 item.Test = new()
 {
-    Test = 10,
+    Test = default,
 };
 
 Console.WriteLine(item.Add);
 
 item.Test = new();
 
-item.Test.Test = 20;
+item.Test.Test = new(12);
 
 Console.WriteLine(item.Add);
