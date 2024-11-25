@@ -190,6 +190,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
         //TODO: maybe I lost sth. Please NO.
         var baseMembers = body.GetChildren<AssignmentExpressionSyntax>().OfType<ExpressionSyntax>()
             .Concat(body.GetChildren<BinaryExpressionSyntax>())
+            .Concat(body.GetChildren<ObjectCreationExpressionSyntax>())
             .Concat(invocations)
             .SelectMany(GetMemberAccessFirst);
 
@@ -210,19 +211,14 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 [
                     ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccessFirst(arg.Expression))
                 ],
-                _ => GetMemberAccess(expression)
-            };
-
-            static IReadOnlyList<ExpressionSyntax> GetMemberAccess(ExpressionSyntax exp) => exp switch
-            {
                 IdentifierNameSyntax name => [name],
                 MemberAccessExpressionSyntax member => [member],
-                AssignmentExpressionSyntax assignment => GetMemberAccess(assignment.Right),
+                AssignmentExpressionSyntax assignment => GetMemberAccessFirst(assignment.Right),
                 BinaryExpressionSyntax binary =>
                 [
-                    ..GetMemberAccess(binary.Left), ..GetMemberAccess(binary.Right)
+                    ..GetMemberAccessFirst(binary.Left), ..GetMemberAccessFirst(binary.Right)
                 ],
-                _ => []
+                _ => [],
             };
         }
     }

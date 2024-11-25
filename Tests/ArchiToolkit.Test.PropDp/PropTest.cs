@@ -5,7 +5,19 @@ namespace ArchiToolkit.Test.PropDp;
 internal partial class SubTest
 {
     [PropDp]
-    public partial Vector2 Test { get; set; }
+    public partial float X { get; set; }
+    
+    [PropDp]
+    public partial float Y { get; set; }
+    
+    [PropDp]
+    public partial Vector2 Test { get; }
+
+    private partial Vector2 GetTest()
+    {
+        var result = new Vector2(X, Y);
+        return result;
+    }
 }
 
 internal partial class PropTest
