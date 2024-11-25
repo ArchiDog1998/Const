@@ -163,10 +163,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
 
         if (nameSpace is null) return;
         
-        if (baseListSyntax is not null)
-        {
-            type = type.WithBaseList(baseListSyntax);
-        }
+        type = type.WithBaseList(baseListSyntax);
 
         var code = NamespaceDeclaration(nameSpace.Name.ToFullString())
             .WithMembers(
