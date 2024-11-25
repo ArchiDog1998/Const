@@ -65,7 +65,7 @@ public static class DiagnosticExtensions
         nameof(DiagnosticStrings.PartialStaticDescriptorTittle), nameof(DiagnosticStrings.PartialStaticDescriptorMessage));
     
     private static readonly DiagnosticDescriptor PartialSetMethodDescriptor = CreateUsageErrorDescriptor(PartialSetMethodDiagnosticId, 
-        nameof(DiagnosticStrings.PartialSetMethodDescriptorTittle), nameof(DiagnosticStrings.PartialSetMethodDescriptorMessage), DiagnosticSeverity.Warning);
+        nameof(DiagnosticStrings.PartialSetMethodDescriptorTittle), nameof(DiagnosticStrings.PartialSetMethodDescriptorMessage));
     
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
