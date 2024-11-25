@@ -15,10 +15,8 @@ public class PropertyDependencyGenerator : DependencyGenerator<MethodPropertyIte
         IPropertySymbol symbol, SemanticModel model, bool hasGet, bool hasSet)
     {
         if (!hasGet) return null;
-        return new MethodPropertyItem(node, symbol, model);
+        return new MethodPropertyItem(node, symbol, model, hasSet);
     }
-
-
     
     protected override void SaveMembers(SourceProductionContext ctx, IGrouping<TypeDeclarationSyntax, MethodPropertyItem> item)
     {

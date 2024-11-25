@@ -5,21 +5,27 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArchiToolkit.Analyzer.Generators;
 
-public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol, SemanticModel model)
+public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol, SemanticModel model, bool hasSet)
     : BasePropertyDependencyItem(node, symbol)
 {
     public override IReadOnlyList<MemberDeclarationSyntax> GetMembers() =>
-        [..base.GetMembers(), GetLazyField(), GetMethod(), ClearMethod(), InitMethod()];
+        [..base.GetMembers(), GetLazyField(), ..AccessMethods(), ClearMethod(), InitMethod()];
 
     protected override AccessorDeclarationSyntax UpdateAccess(AccessorDeclarationSyntax accessor)
     {
-        if (accessor.Kind() is not SyntaxKind.GetAccessorDeclaration) return accessor;
-        return accessor.WithExpressionBody(
-            ArrowExpressionClause(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName(Name.LazyName),
-                    IdentifierName("Value"))));
+        return accessor.Kind() switch
+        {
+            SyntaxKind.GetAccessorDeclaration => accessor.WithExpressionBody(
+                ArrowExpressionClause(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName(Name.LazyName), IdentifierName("Value")))),
+            SyntaxKind.SetAccessorDeclaration => accessor.WithExpressionBody(
+                ArrowExpressionClause(InvocationExpression(IdentifierName(Name.SetName)) .WithArgumentList(
+                    ArgumentList(
+                        SingletonSeparatedList(
+                            Argument(
+                                IdentifierName("value"))))))),
+            _ => accessor
+        };
     }
 
     private FieldDeclarationSyntax GetLazyField()
@@ -42,9 +48,9 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     Token(SyntaxKind.PrivateKeyword)));
     }
 
-    private MethodDeclarationSyntax GetMethod()
+    private IEnumerable<MethodDeclarationSyntax>  AccessMethods()
     {
-        return MethodDeclaration(
+        var getMethod = MethodDeclaration(
                 IdentifierName(TypeName),
                 Identifier(Name.GetName))
             .WithAttributeLists(
@@ -57,6 +63,28 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.PartialKeyword)))
             .WithSemicolonToken(
                 Token(SyntaxKind.SemicolonToken));
+
+        if (!hasSet) return [getMethod];
+        
+        var setMethod = MethodDeclaration(
+                PredefinedType(
+                    Token(SyntaxKind.VoidKeyword)),
+                Identifier(Name.SetName))
+            .WithModifiers(
+                TokenList(
+                    Token(SyntaxKind.PartialKeyword)))
+            .WithAttributeLists(SingletonList(GeneratedCodeAttribute(typeof(PropertyDependencyGenerator))))
+            .WithParameterList(
+                ParameterList(
+                    SingletonSeparatedList(
+                        Parameter(
+                                Identifier("value"))
+                            .WithType(
+                                IdentifierName(TypeName)))))
+            .WithSemicolonToken(
+                Token(SyntaxKind.SemicolonToken));
+        
+        return [getMethod, setMethod];
     }
 
     private MethodDeclarationSyntax ClearMethod()
@@ -166,7 +194,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                     next.AddRange(invocations.Select(invocation => model.GetSymbolInfo(invocation).Symbol)
                         .OfType<ISymbol>()
                         .Where(s => s.ContainingSymbol.Equals(Symbol.ContainingSymbol, SymbolEqualityComparer.Default))
-                        .Select(s => GetMethodDeclaration(s.Name))
+                        .Select(s => FindMethodDeclaration(s.Name))
                         .OfType<MethodDeclarationSyntax>());
                 }
                 methods = next;
@@ -223,9 +251,9 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
         }
     }
 
-    internal MethodDeclarationSyntax? GetMethodDeclaration() => GetMethodDeclaration(Name.GetName);
+    internal MethodDeclarationSyntax? GetMethodDeclaration() => FindMethodDeclaration(Name.GetName);
     
-    private MethodDeclarationSyntax? GetMethodDeclaration(string name)
+    private MethodDeclarationSyntax? FindMethodDeclaration(string name)
     {
         var type = Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
         return type?.GetChildren<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.Text == name);

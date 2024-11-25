@@ -26,7 +26,7 @@ internal partial class PropTest
     public partial SubTest Test { get; set; }
     
     [PropDp]
-    public partial int Add { get; }
+    public partial int Add { get; set; }
 
     private partial int GetAdd() => SetValue(SetValue(SetValue((int)(Test.Test.X + Test.Test.Y)))) ;
 

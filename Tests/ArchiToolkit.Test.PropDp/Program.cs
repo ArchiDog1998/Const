@@ -1,7 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
 using ArchiToolkit.Test.PropDp;
-
 
 //global::System.Collections.Generic.EqualityComparer<double>.Default.Equals(field, value)
 
@@ -17,4 +15,5 @@ using ArchiToolkit.Test.PropDp;
 //
 // item.Test.Test = new(12);
 //
+
 Console.WriteLine("Hello World!");

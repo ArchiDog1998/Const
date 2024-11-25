@@ -24,11 +24,11 @@ public class PropertyDependencyAnalyzer : DependencyAnalyzer
     private static void PartialMethodCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node, SemanticModel model)
     {
         CheckAccessors(node, out var hasGetter, out var hasSetter, out _);
-        if (!hasGetter || hasSetter) return;
+        if (!hasGetter) return;
         
         if (model.GetDeclaredSymbol(node) is not { } symbol) return;
         
-        var property = new MethodPropertyItem(node, symbol, model);
+        var property = new MethodPropertyItem(node, symbol, model, hasSetter);
         var method = property.GetMethodDeclaration();
         
         PartialMethodExistenceCheck();
