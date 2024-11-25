@@ -26,6 +26,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
         foreach (var (node, model) in list)
         {
             if (!node.Modifiers.Any(SyntaxKind.PartialKeyword)) continue;
+            if (node.Modifiers.Any(SyntaxKind.StaticKeyword)) continue;
             if (model.GetDeclaredSymbol(node) is not { } symbol) continue;
 
             PropertyDependencyAnalyzer.CheckAccessors(node, out var hasGet, out var hasSet);

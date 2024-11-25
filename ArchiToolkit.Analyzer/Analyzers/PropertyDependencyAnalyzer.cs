@@ -33,12 +33,19 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
         PartialCheck(context, node);
         AccessorsCheck(context, node);
         PartialMethodCheck(context, node, model);
+        PartialStaticCheck(context, node);
     }
 
     private static void PartialCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
     {
         if (node.Modifiers.Any(SyntaxKind.PartialKeyword)) return;
         context.ReportPartial(node.Identifier);
+    }
+    
+    private static void PartialStaticCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
+    {
+        if (!node.Modifiers.Any(SyntaxKind.StaticKeyword)) return;
+        context.ReportPartialStatic(node.Identifier);
     }
 
     private static void AccessorsCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)

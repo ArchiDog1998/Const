@@ -256,5 +256,23 @@ namespace ArchiToolkit.Analyzer.Resources {
                 return ResourceManager.GetString("PartialPropertyDescriptorTittle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t add the static to this property when you add the attribute Prop..
+        /// </summary>
+        internal static string PartialStaticDescriptorMessage {
+            get {
+                return ResourceManager.GetString("PartialStaticDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t add the static to this property when you add the attribute Prop..
+        /// </summary>
+        internal static string PartialStaticDescriptorTittle {
+            get {
+                return ResourceManager.GetString("PartialStaticDescriptorTittle", resourceCulture);
+            }
+        }
     }
 }

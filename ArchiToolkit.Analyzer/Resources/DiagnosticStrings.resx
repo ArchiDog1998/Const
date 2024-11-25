@@ -84,4 +84,10 @@
     <data name="PartialMethodCallSelfDescriptorMessage" xml:space="preserve">
         <value>Don't call this property in this method</value>
     </data>
+    <data name="PartialStaticDescriptorTittle" xml:space="preserve">
+        <value>Don't add the static to this property when you add the attribute Prop.</value>
+    </data>
+    <data name="PartialStaticDescriptorMessage" xml:space="preserve">
+        <value>Don't add the static to this property when you add the attribute Prop.</value>
+    </data>
 </root>

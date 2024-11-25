@@ -16,6 +16,7 @@ public static class DiagnosticExtensions
         AccessorTypePropertyDescriptor,
         PartialMethodDescriptor,
         PartialMethodCallSelfDescriptor,
+        PartialStaticDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
 #endif
@@ -54,6 +55,9 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor PartialMethodCallSelfDescriptor = CreateUsageErrorDescriptor("AC1105", 
         nameof(DiagnosticStrings.PartialMethodCallSelfDescriptorTittle), nameof(DiagnosticStrings.PartialMethodCallSelfDescriptorMessage));
     
+    private static readonly DiagnosticDescriptor PartialStaticDescriptor = CreateUsageErrorDescriptor("AC1106", 
+        nameof(DiagnosticStrings.PartialStaticDescriptorTittle), nameof(DiagnosticStrings.PartialStaticDescriptorMessage));
+    
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
     
@@ -69,6 +73,9 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor("AC1005",
         nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
 
+    public static void ReportPartialStatic(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
+        => ReportDescriptor(context, PartialStaticDescriptor, syntaxNode);
+    
     public static void ReportAccessorType(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
         => ReportDescriptor(context, AccessorTypePropertyDescriptor, syntaxNode);
     
