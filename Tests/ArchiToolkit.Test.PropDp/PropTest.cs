@@ -14,8 +14,8 @@ internal partial class PropTest
     [PropDp]
     public partial int Add { get; }
 
-    private partial int GetAdd()
-    {
-        return Test.Test + 1;
-    }
+    private partial int GetAdd() => GetValue();
+    
+    [Const]
+    private int GetValue() => Test.Test + 1;
 }

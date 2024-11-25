@@ -153,52 +153,81 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             var method = GetMethodDeclaration();
             if (method is null) return [];
 
-            var body = method.Body as SyntaxNode ?? method.ExpressionBody;
-            if (body is null) return [];
+            List<MethodDeclarationSyntax> methods = [method];
+            IEnumerable<ExpressionSyntax> result = [];
 
-            //TODO: maybe I lost sth. Please NO.
-            var baseMembers = body.GetChildren<AssignmentExpressionSyntax>().OfType<ExpressionSyntax>()
-                .Concat(body.GetChildren<BinaryExpressionSyntax>())
-                .Concat(body.GetChildren<InvocationExpressionSyntax>())
-                .SelectMany(GetMemberAccessFirst);
-
-            var locals = body.GetChildren<VariableDeclaratorSyntax>().Select(v => v.Initializer?.Value)
-                .OfType<ExpressionSyntax>().SelectMany(GetMemberAccessFirst);
-
-            return [..baseMembers, ..locals];
-
-            static IReadOnlyList<ExpressionSyntax> GetMemberAccessFirst(ExpressionSyntax expression)
+            while (methods.Any())
             {
-                return expression switch
+                List<MethodDeclarationSyntax> next = [];
+                foreach (var m in methods)
                 {
-                    InvocationExpressionSyntax invocation =>
-                    [
-                        ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccess(arg.Expression))
-                    ],
-                    _ => GetMemberAccess(expression)
-                };
-
-                static IReadOnlyList<ExpressionSyntax> GetMemberAccess(ExpressionSyntax exp) => exp switch
-                {
-                    IdentifierNameSyntax name => [name],
-                    MemberAccessExpressionSyntax member => [member],
-                    AssignmentExpressionSyntax assignment => GetMemberAccess(assignment.Right),
-                    BinaryExpressionSyntax binary =>
-                    [
-                        ..GetMemberAccess(binary.Left), ..GetMemberAccess(binary.Right)
-                    ],
-                    _ => []
-                };
+                    result = result.Concat(GetExpressions(m, out var invocations));
+                
+                    next.AddRange(invocations.Select(invocation => model.GetSymbolInfo(invocation).Symbol)
+                        .OfType<ISymbol>()
+                        .Where(s => s.ContainingSymbol.Equals(symbol.ContainingSymbol, SymbolEqualityComparer.Default))
+                        .Select(s => GetMethodDeclaration(s.Name))
+                        .OfType<MethodDeclarationSyntax>());
+                }
+                methods = next;
             }
+            
+            return result.ToImmutableArray();
+        }
+    }
+    
+    private static IReadOnlyList<ExpressionSyntax> GetExpressions(MethodDeclarationSyntax method, out InvocationExpressionSyntax[] invocations)
+    {
+        var body = method.Body as SyntaxNode ?? method.ExpressionBody;
+        if (body is null)
+        {
+            invocations = [];
+            return [];
+        }
+
+        invocations = body.GetChildren<InvocationExpressionSyntax>().ToArray();
+
+        //TODO: maybe I lost sth. Please NO.
+        var baseMembers = body.GetChildren<AssignmentExpressionSyntax>().OfType<ExpressionSyntax>()
+            .Concat(body.GetChildren<BinaryExpressionSyntax>())
+            .Concat(invocations)
+            .SelectMany(GetMemberAccessFirst);
+
+        var locals = body.GetChildren<VariableDeclaratorSyntax>().Select(v => v.Initializer?.Value)
+            .OfType<ExpressionSyntax>().SelectMany(GetMemberAccessFirst);
+
+        return [..baseMembers, ..locals];
+
+        static IReadOnlyList<ExpressionSyntax> GetMemberAccessFirst(ExpressionSyntax expression)
+        {
+            return expression switch
+            {
+                InvocationExpressionSyntax invocation =>
+                [
+                    ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccess(arg.Expression))
+                ],
+                _ => GetMemberAccess(expression)
+            };
+
+            static IReadOnlyList<ExpressionSyntax> GetMemberAccess(ExpressionSyntax exp) => exp switch
+            {
+                IdentifierNameSyntax name => [name],
+                MemberAccessExpressionSyntax member => [member],
+                AssignmentExpressionSyntax assignment => GetMemberAccess(assignment.Right),
+                BinaryExpressionSyntax binary =>
+                [
+                    ..GetMemberAccess(binary.Left), ..GetMemberAccess(binary.Right)
+                ],
+                _ => []
+            };
         }
     }
 
-    internal MethodDeclarationSyntax? GetMethodDeclaration()
+    internal MethodDeclarationSyntax? GetMethodDeclaration() => GetMethodDeclaration(Name.GetName);
+    
+    private MethodDeclarationSyntax? GetMethodDeclaration(string name)
     {
         var type = Node.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
-        if (type is null) return null;
-
-        var name = Name.GetName;
-        return type.GetChildren<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.Text == name);
+        return type?.GetChildren<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.Text == name);
     }
 }
