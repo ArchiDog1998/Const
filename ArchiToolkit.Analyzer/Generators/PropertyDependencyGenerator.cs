@@ -18,7 +18,8 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(provider.Collect(), Execute);
     }
-
+    
+    private static readonly HashSet<string> AddedNames = [];
     private static void Execute(SourceProductionContext ctx,
         ImmutableArray<(PropertyDeclarationSyntax Node, SemanticModel SemanticModel)> list)
     {
@@ -35,6 +36,7 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
             props.Add(hasSet ? new FieldPropertyItem(node, symbol) : new MethodPropertyItem(node, symbol, model));
         }
 
+        AddedNames.Clear();
         foreach (var prop in props)
         {
             SaveMembers(ctx, prop);
@@ -155,6 +157,8 @@ public class PropertyDependencyGenerator : IIncrementalGenerator
     private static void SaveMembers(SourceProductionContext ctx, IReadOnlyList<MemberDeclarationSyntax> members,
         TypeDeclarationSyntax type, string name, BaseListSyntax? baseListSyntax = null)
     {
+        if (!AddedNames.Add(name)) return;
+
         var nameSpace = type.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
 
         if (nameSpace is null) return;
