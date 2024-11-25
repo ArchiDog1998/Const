@@ -8,76 +8,22 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ArchiToolkit.Analyzer.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
+public class PropertyDependencyAnalyzer : DependencyAnalyzer
 {
     internal const string AttributeName = "ArchiToolkit.PropDpAttribute";
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => DiagnosticExtensions.PropDpDescriptors;
 
-    public override void Initialize(AnalysisContext context)
+    protected override string DetectAttributeName => AttributeName;
+
+    protected override ImmutableArray<DiagnosticDescriptor> CustomDiagnostics => DiagnosticExtensions.PropDpDescriptors;
+
+    protected override void CustomCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node, SemanticModel model)
     {
-        context.EnableConcurrentExecution();
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze |
-                                               GeneratedCodeAnalysisFlags.ReportDiagnostics);
-
-        context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.PropertyDeclaration);
-    }
-
-    private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
-    {
-        if (context.Node is not PropertyDeclarationSyntax node) return;
-        var model = context.SemanticModel;
-
-        if (model.GetDeclaredSymbol(node) is not { } symbol) return;
-        if (!symbol.GetAttributes().Any(a => a.AttributeClass?.GetFullMetadataName() is AttributeName)) return;
-
-        PartialCheck(context, node);
-        AccessorsCheck(context, node);
         PartialMethodCheck(context, node, model);
-        PartialStaticCheck(context, node);
-    }
-
-    private static void PartialCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
-    {
-        if (node.Modifiers.Any(SyntaxKind.PartialKeyword)) return;
-        context.ReportPartial(node.Identifier);
     }
     
-    private static void PartialStaticCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
-    {
-        if (!node.Modifiers.Any(SyntaxKind.StaticKeyword)) return;
-        context.ReportPartialStatic(node.Identifier);
-    }
-
-    private static void AccessorsCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node)
-    {
-        var accessors = node.AccessorList?.Accessors;
-
-        if (accessors == null) return;
-
-        foreach (var accessor in accessors)
-        {
-            AccessorCheck(accessor);
-        }
-
-        return;
-
-        void AccessorCheck(AccessorDeclarationSyntax accessor)
-        {
-            if (accessor.Body is not null)
-            {
-                context.ReportBody(accessor.Body);
-            }
-
-            if (accessor.Kind() is not SyntaxKind.GetAccessorDeclaration and not SyntaxKind.SetAccessorDeclaration)
-            {
-                context.ReportAccessorType(accessor);
-            }
-        }
-    }
-
     private static void PartialMethodCheck(SyntaxNodeAnalysisContext context, PropertyDeclarationSyntax node, SemanticModel model)
     {
-        CheckAccessors(node, out var hasGetter, out var hasSetter);
+        CheckAccessors(node, out var hasGetter, out var hasSetter, out _);
         if (!hasGetter || hasSetter) return;
         
         if (model.GetDeclaredSymbol(node) is not { } symbol) return;
@@ -108,11 +54,11 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
             context.ReportPartialMethodCallSelf(accessor.Expression);
         }
     }
-
-
-    internal static void CheckAccessors(PropertyDeclarationSyntax node, out bool hasGetter, out bool hasSetter)
+    
+    internal static void CheckAccessors(PropertyDeclarationSyntax node,
+        out bool hasGetter, out bool hasSetter, out bool hasOthers)
     {
-        hasGetter = hasSetter = false;
+        hasGetter = hasSetter = hasOthers = false;
 
         var accessors = node.AccessorList?.Accessors;
         if (accessors == null) return;
@@ -126,6 +72,9 @@ public class PropertyDependencyAnalyzer : DiagnosticAnalyzer
                     break;
                 case SyntaxKind.SetAccessorDeclaration:
                     hasSetter = true;
+                    break;
+                default:
+                    hasOthers = true;
                     break;
             }
         }

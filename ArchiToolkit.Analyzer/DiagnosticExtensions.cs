@@ -9,17 +9,22 @@ namespace ArchiToolkit.Analyzer;
 public static class DiagnosticExtensions
 {
     public const string PartialPropertyDiagnosticId = "AC1101", PartialMethodDiagnosticId = "AC1104";
-    public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
+    
+    public static ImmutableArray<DiagnosticDescriptor> BaseDpDescriptors =>
     [
         PartialPropertyDescriptor,
+        PartialStaticDescriptor,
         BodyPropertyDescriptor,
         AccessorTypePropertyDescriptor,
-        PartialMethodDescriptor,
-        PartialMethodCallSelfDescriptor,
-        PartialStaticDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
 #endif
+    ];
+    
+    public static ImmutableArray<DiagnosticDescriptor> PropDpDescriptors =>
+    [
+        PartialMethodDescriptor,
+        PartialMethodCallSelfDescriptor,
     ];
     
     public static ImmutableArray<DiagnosticDescriptor> ConstDescriptors =>

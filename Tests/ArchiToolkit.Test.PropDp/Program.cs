@@ -2,6 +2,9 @@
 
 using ArchiToolkit.Test.PropDp;
 
+
+//global::System.Collections.Generic.EqualityComparer<double>.Default.Equals(field, value)
+
 // var item = new PropTest();
 // item.Test = new()
 // {
@@ -14,4 +17,4 @@ using ArchiToolkit.Test.PropDp;
 //
 // item.Test.Test = new(12);
 //
-// Console.WriteLine(item.Add);
+Console.WriteLine("Hello World!");

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArchiToolkit.Analyzer.Generators;
 
-internal class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol)
+public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol)
     : BasePropertyDependencyItem(node, symbol)
 {
     private IReadOnlyList<StatementSyntax> ChangedInvoke()

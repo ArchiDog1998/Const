@@ -4,10 +4,10 @@ namespace ArchiToolkit.Test.PropDp;
 
 internal partial class SubTest
 {
-    [PropDp]
+    [FieldDp]
     public partial float X { get; set; }
     
-    [PropDp]
+    [FieldDp]
     public partial float Y { get; set; }
     
     [PropDp]
@@ -22,7 +22,7 @@ internal partial class SubTest
 
 internal partial class PropTest
 {
-    [PropDp]
+    [FieldDp]
     public partial SubTest Test { get; set; }
     
     [PropDp]
