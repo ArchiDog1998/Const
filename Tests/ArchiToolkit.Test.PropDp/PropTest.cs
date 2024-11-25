@@ -14,8 +14,11 @@ internal partial class PropTest
     [PropDp]
     public partial int Add { get; }
 
-    private partial int GetAdd() => GetValue();
-    
+    private partial int GetAdd() => SetValue(SetValue(SetValue(Test.Test))) ;
+
     [Const]
     private int GetValue() => Test.Test + 1;
+
+    [Const]
+    private int SetValue(int value) => value;
 }

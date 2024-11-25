@@ -165,7 +165,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
                 
                     next.AddRange(invocations.Select(invocation => model.GetSymbolInfo(invocation).Symbol)
                         .OfType<ISymbol>()
-                        .Where(s => s.ContainingSymbol.Equals(symbol.ContainingSymbol, SymbolEqualityComparer.Default))
+                        .Where(s => s.ContainingSymbol.Equals(Symbol.ContainingSymbol, SymbolEqualityComparer.Default))
                         .Select(s => GetMethodDeclaration(s.Name))
                         .OfType<MethodDeclarationSyntax>());
                 }
@@ -204,7 +204,7 @@ public class MethodPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol 
             {
                 InvocationExpressionSyntax invocation =>
                 [
-                    ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccess(arg.Expression))
+                    ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccessFirst(arg.Expression))
                 ],
                 _ => GetMemberAccess(expression)
             };
