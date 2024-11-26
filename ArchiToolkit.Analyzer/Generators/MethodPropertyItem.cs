@@ -99,35 +99,35 @@ public class MethodPropertyItem(
     {
         IEnumerable<StatementSyntax> addition = [];
         List<MethodDeclarationSyntax> result = [];
-        if (Symbol.Type.IsReferenceType)
-        {
-            result.Add(SetOrModifyMethod(Name.ModifyName));
-        }
-
-        if (HasModifyMethodDeclaration())
-        {
-            addition =
-            [
-                ExpressionStatement(
-                    InvocationExpression(
-                            IdentifierName(Name.ModifyName))
-                        .WithArgumentList(
-                            ArgumentList(
-                                SingletonSeparatedList(
-                                    Argument(
-                                        MemberAccessExpression(
-                                            SyntaxKind.SimpleMemberAccessExpression,
-                                            IdentifierName(Name.LazyName),
-                                            IdentifierName("Value"))))))),
-                ExpressionStatement(
-                    ConditionalAccessExpression(
-                        IdentifierName(Name.NameChanged),
-                        InvocationExpression(
-                            MemberBindingExpression(
-                                IdentifierName("Invoke"))))),
-                ReturnStatement()
-            ];
-        }
+        // if (Symbol.Type.IsReferenceType)
+        // {
+        //     result.Add(SetOrModifyMethod(Name.ModifyName));
+        // }
+        //
+        // if (HasModifyMethodDeclaration())
+        // {
+        //     addition =
+        //     [
+        //         ExpressionStatement(
+        //             InvocationExpression(
+        //                     IdentifierName(Name.ModifyName))
+        //                 .WithArgumentList(
+        //                     ArgumentList(
+        //                         SingletonSeparatedList(
+        //                             Argument(
+        //                                 MemberAccessExpression(
+        //                                     SyntaxKind.SimpleMemberAccessExpression,
+        //                                     IdentifierName(Name.LazyName),
+        //                                     IdentifierName("Value"))))))),
+        //         ExpressionStatement(
+        //             ConditionalAccessExpression(
+        //                 IdentifierName(Name.NameChanged),
+        //                 InvocationExpression(
+        //                     MemberBindingExpression(
+        //                         IdentifierName("Invoke"))))),
+        //         ReturnStatement()
+        //     ];
+        // }
 
         result.Add(MethodDeclaration(
                 PredefinedType(
@@ -299,7 +299,7 @@ public class MethodPropertyItem(
         }
     }
 
-    private bool HasModifyMethodDeclaration() => FindMethodDeclaration(Name.ModifyName) is not null;
+    // private bool HasModifyMethodDeclaration() => FindMethodDeclaration(Name.ModifyName) is not null;
 
     internal bool HasSetMethodDeclaration() => FindMethodDeclaration(Name.SetName) is not null;
 

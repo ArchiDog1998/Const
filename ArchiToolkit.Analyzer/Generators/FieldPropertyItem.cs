@@ -8,12 +8,53 @@ namespace ArchiToolkit.Analyzer.Generators;
 public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol symbol)
     : BasePropertyDependencyItem(node, symbol)
 {
+    private const string ChangePrefix = PropDpName.Prefix + "On";
+    
+    public override IReadOnlyList<MemberDeclarationSyntax> GetMembers()
+        => [.. base.GetMembers(), ..PartialMethods()];
+
+    private IEnumerable<MethodDeclarationSyntax> PartialMethods()
+    {
+        return [CreatePartialMethod(Name.NameChanging), CreatePartialMethod(Name.NameChanged)];
+        
+        MethodDeclarationSyntax CreatePartialMethod(string methodName) => MethodDeclaration(
+                PredefinedType(
+                    Token(SyntaxKind.VoidKeyword)),
+                Identifier(ChangePrefix + methodName))
+            .WithModifiers(
+                TokenList(
+                    Token(SyntaxKind.PartialKeyword)))
+            .WithParameterList(
+                ParameterList(
+                    SingletonSeparatedList(
+                        Parameter(
+                                Identifier("value"))
+                            .WithType(
+                                IdentifierName(TypeName)))))
+            .WithSemicolonToken(
+                Token(SyntaxKind.SemicolonToken));
+    }
+        
+    protected override AccessorDeclarationSyntax? UpdateAccess(AccessorDeclarationSyntax accessor)
+    {
+        return accessor.Kind() switch
+        {
+            SyntaxKind.GetAccessorDeclaration => accessor,
+            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor
+                .WithSemicolonToken(Token(SyntaxKind.None))
+                .WithBody(Block((StatementSyntax[])[..ChangingInvoke(), Assign(), ..ChangedInvoke()])),
+            _ => null
+        };
+    }
+    
     private IReadOnlyList<StatementSyntax> ChangedInvoke()
     {
         var changed = ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanged),
             InvocationExpression(MemberBindingExpression(IdentifierName("Invoke")))));
 
-        return [changed, InvokeEvent("PropertyChanged")];
+        var changedMethod = CreateInvocationMethod(Name.NameChanged);
+        
+        return [changed, changedMethod, InvokeEvent("PropertyChanged")];
     }
 
     internal static INamedTypeSymbol? GetTypeArgument(IPropertySymbol symbol)
@@ -78,8 +119,25 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
         var changing = ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanging),
             InvocationExpression(MemberBindingExpression(IdentifierName("Invoke")))));
 
-        return [ifReturn, changing, InvokeEvent("PropertyChanging")];
+        var changingMethod = CreateInvocationMethod(Name.NameChanging);
+
+        return [ifReturn, changing, changingMethod, InvokeEvent("PropertyChanging")];
     }
+
+    private static ExpressionStatementSyntax CreateInvocationMethod(string methodName) => ExpressionStatement(
+        InvocationExpression(
+                IdentifierName(ChangePrefix + methodName))
+            .WithArgumentList(
+                ArgumentList(
+                    SingletonSeparatedList(
+                        Argument(
+                            IdentifierName(
+                                Identifier(
+                                    TriviaList(),
+                                    SyntaxKind.FieldKeyword,
+                                    "field",
+                                    "field",
+                                    TriviaList())))))));
 
     private StatementSyntax InvokeEvent(string eventName)
     {
@@ -125,17 +183,5 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
             IdentifierName(
                 Identifier(TriviaList(), SyntaxKind.FieldKeyword, "field", "field", TriviaList())),
             IdentifierName("value")));
-    }
-    
-    protected override AccessorDeclarationSyntax? UpdateAccess(AccessorDeclarationSyntax accessor)
-    {
-        return accessor.Kind() switch
-        {
-            SyntaxKind.GetAccessorDeclaration => accessor,
-            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor
-                .WithSemicolonToken(Token(SyntaxKind.None))
-                .WithBody(Block((StatementSyntax[])[..ChangingInvoke(), Assign(), ..ChangedInvoke()])),
-            _ => null
-        };
     }
 }
