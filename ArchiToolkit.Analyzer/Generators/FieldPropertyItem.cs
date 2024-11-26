@@ -18,11 +18,36 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
     private IReadOnlyList<StatementSyntax> ChangingInvoke()
     {
         var ifReturn = IfStatement(
-            InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName(
-                        Identifier(TriviaList(), SyntaxKind.FieldKeyword, "field", "field", TriviaList())),
-                    IdentifierName("Equals")))
-                .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(IdentifierName("value"))))),
+            InvocationExpression(
+                    MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            GenericName(
+                                    Identifier("global::System.Collections.Generic.EqualityComparer"))
+                                .WithTypeArgumentList(
+                                    TypeArgumentList(
+                                        SingletonSeparatedList<TypeSyntax>(
+                                            IdentifierName(TypeName)))),
+                            IdentifierName("Default")),
+                        IdentifierName("Equals")))
+                .WithArgumentList(
+                    ArgumentList(
+                        SeparatedList<ArgumentSyntax>(
+                            new SyntaxNodeOrToken[]
+                            {
+                                Argument(
+                                    IdentifierName(
+                                        Identifier(
+                                            TriviaList(),
+                                            SyntaxKind.FieldKeyword,
+                                            "field",
+                                            "field",
+                                            TriviaList()))),
+                                Token(SyntaxKind.CommaToken),
+                                Argument(
+                                    IdentifierName("value"))
+                            }))),
             ReturnStatement());
         var changing = ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanging),
             InvocationExpression(MemberBindingExpression(IdentifierName("Invoke")))));
@@ -68,7 +93,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
                                 })))));
     }
 
-    private StatementSyntax Assign()
+    private static StatementSyntax Assign()
     {
         return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
             IdentifierName(
@@ -81,24 +106,6 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
         return accessor.Kind() switch
         {
             SyntaxKind.GetAccessorDeclaration => accessor,
-            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration when Symbol.Type.IsReferenceType => accessor
-                .WithSemicolonToken(Token(SyntaxKind.None))
-                .WithBody(Block(
-                            (StatementSyntax[])[IfStatement(
-                                IsPatternExpression(
-                                    IdentifierName(
-                                        Identifier(
-                                            TriviaList(),
-                                            SyntaxKind.FieldKeyword,
-                                            "field",
-                                            "field",
-                                            TriviaList())),
-                                    UnaryPattern(
-                                        ConstantPattern(
-                                            LiteralExpression(
-                                                SyntaxKind.NullLiteralExpression)))),
-                                Block(ChangingInvoke())), Assign(), ..ChangedInvoke()])),
-
             SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor
                 .WithSemicolonToken(Token(SyntaxKind.None))
                 .WithBody(Block((StatementSyntax[])[..ChangingInvoke(), Assign(), ..ChangedInvoke()])),
