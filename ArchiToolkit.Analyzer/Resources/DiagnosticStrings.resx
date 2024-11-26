@@ -96,4 +96,10 @@
     <data name="PartialSetMethodDescriptorMessage" xml:space="preserve">
         <value>Please add partial method for setting the property '{0}'</value>
     </data>
+    <data name="AttributeTypeDescriptorTittle" xml:space="preserve">
+        <value>Wrong Comparer Type</value>
+    </data>
+    <data name="AttributeTypeDescriptorMessage" xml:space="preserve">
+        <value>Please make sure the comparer is EqualityComparer with the right generic type with a 0-arguments constructor.</value>
+    </data>
 </root>

@@ -78,6 +78,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please make sure the comparer is EqualityComparer with the right generic type with a 0-arguments constructor..
+        /// </summary>
+        internal static string AttributeTypeDescriptorMessage {
+            get {
+                return ResourceManager.GetString("AttributeTypeDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong Comparer Type.
+        /// </summary>
+        internal static string AttributeTypeDescriptorTittle {
+            get {
+                return ResourceManager.GetString("AttributeTypeDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t add body to the property.
         /// </summary>
         internal static string BodyPropertyDecriptorTittle {

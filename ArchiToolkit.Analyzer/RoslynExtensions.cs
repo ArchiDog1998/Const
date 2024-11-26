@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ArchiToolkit.Analyzer;
 
@@ -60,14 +61,12 @@ internal static class RoslynExtensions
         }
 
         var str = symbol?.MetadataName ?? string.Empty;
-        if (symbol is INamedTypeSymbol symbolType)//Generic
-        {
-            var strs = str.Split('`');
-            if (strs.Length < 2) return str;
-            str = strs[0];
+        if (symbol is not INamedTypeSymbol symbolType) return str; //Generic
+        var strs = str.Split('`');
+        if (strs.Length < 2) return str;
+        str = strs[0];
 
-            str += "<" + string.Join(", ", symbolType.TypeArguments.Select(p => p.GetFullMetadataName())) + ">";
-        }
+        str += "<" + string.Join(", ", symbolType.TypeArguments.Select(p => p.GetFullMetadataName())) + ">";
         return str;
     }
 
@@ -95,5 +94,26 @@ internal static class RoslynExtensions
         using var stringWriter = new StringWriter();
         node.NormalizeWhitespace().WriteTo(stringWriter);
         return stringWriter.ToString();
+    }
+    
+    /// <summary>
+    /// Get the attribute type symbol.s
+    /// </summary>
+    /// <param name="attributeSyntax"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static INamedTypeSymbol GetTypeSymbol(this AttributeSyntax attributeSyntax, SemanticModel model)
+    {
+        var attrSymbol = model.GetSymbolInfo(attributeSyntax).Symbol;
+        if (attrSymbol is IMethodSymbol methodSymbol)
+        {
+            attrSymbol = methodSymbol.ContainingType;
+        }
+        if (attrSymbol is not INamedTypeSymbol namedTypeSymbol)
+        {
+            throw new InvalidOperationException("How can it be? No type symbol of this attribute.");
+        }
+        return namedTypeSymbol;
     }
 }

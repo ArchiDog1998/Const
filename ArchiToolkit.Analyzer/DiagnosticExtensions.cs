@@ -27,7 +27,12 @@ public static class DiagnosticExtensions
         PartialSetMethodDescriptor,
         PartialMethodCallSelfDescriptor,
     ];
-    
+
+    public static ImmutableArray<DiagnosticDescriptor> FieldDpDescriptors =>
+    [
+        AttributeTypeDescriptor,
+    ];
+
     public static ImmutableArray<DiagnosticDescriptor> ConstDescriptors =>
     [
         ParameterDescriptor, MemberDescriptor, MethodDescriptor,
@@ -67,6 +72,9 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor PartialSetMethodDescriptor = CreateUsageErrorDescriptor(PartialSetMethodDiagnosticId, 
         nameof(DiagnosticStrings.PartialSetMethodDescriptorTittle), nameof(DiagnosticStrings.PartialSetMethodDescriptorMessage));
     
+    private static readonly DiagnosticDescriptor AttributeTypeDescriptor = CreateUsageErrorDescriptor("AC1108", 
+        nameof(DiagnosticStrings.AttributeTypeDescriptorTittle), nameof(DiagnosticStrings.AttributeTypeDescriptorMessage), DiagnosticSeverity.Warning);
+    
     private static readonly DiagnosticDescriptor ParameterDescriptor = CreateUsageErrorDescriptor("AC1001",
         nameof(DiagnosticStrings.ParameterDescriptorTittle), nameof(DiagnosticStrings.ParameterDescriptorMessage));
     
@@ -82,6 +90,9 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor("AC1005",
         nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
 
+    public static void ReportAttributeType(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
+        => ReportDescriptor(context, AttributeTypeDescriptor, syntaxNode);
+    
     public static void ReportPartialStatic(this SyntaxNodeAnalysisContext context, SyntaxToken syntaxNode)
         => ReportDescriptor(context, PartialStaticDescriptor, syntaxNode);
     

@@ -17,4 +17,5 @@ AC1104 | Usage | Error | Please add partial method for getting this property
 AC1105 | Usage | Error | Don't call this property in this method
 AC1106 | Usage | Error | Don't add the static to this property when you add the attribute Prop.
 AC1107 | Usage | Error | You can add partial method for setting this property
+AC1108 | Usage | Warning | Wrong Comparer Type
 AC2001  | Tool     | Warning  | Where is its name?                   
