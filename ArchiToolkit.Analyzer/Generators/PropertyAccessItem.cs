@@ -180,6 +180,6 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
     private static bool IsPropDpProperty(IPropertySymbol symbol)
     {
         return symbol.GetAttributes().Any(a =>
-            a.AttributeClass?.GetFullMetadataName() is PropertyDependencyAnalyzer.AttributeName);
+            a.AttributeClass?.GetFullMetadataName() is PropertyDependencyAnalyzer.AttributeName or FieldDependencyAnalyzer.AttributeName);
     }
 }

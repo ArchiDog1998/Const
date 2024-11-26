@@ -285,6 +285,7 @@ public class MethodPropertyItem(
                 ],
                 InvocationExpressionSyntax invocation =>
                 [
+                    invocation.Expression,
                     ..invocation.ArgumentList.Arguments.SelectMany(arg => GetMemberAccessFirst(arg.Expression))
                 ],
                 IdentifierNameSyntax name => [name],
