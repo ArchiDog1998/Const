@@ -78,6 +78,7 @@ public class PropertyDependencyAnalyzer : DependencyAnalyzer
                     hasGetter = true;
                     break;
                 case SyntaxKind.SetAccessorDeclaration:
+                case SyntaxKind.InitAccessorDeclaration:
                     hasSetter = true;
                     break;
                 default:

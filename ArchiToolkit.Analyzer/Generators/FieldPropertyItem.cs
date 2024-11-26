@@ -81,7 +81,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
         return accessor.Kind() switch
         {
             SyntaxKind.GetAccessorDeclaration => accessor,
-            SyntaxKind.SetAccessorDeclaration when Symbol.Type.IsReferenceType => accessor
+            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration when Symbol.Type.IsReferenceType => accessor
                 .WithSemicolonToken(Token(SyntaxKind.None))
                 .WithBody(Block(
                             (StatementSyntax[])[IfStatement(
@@ -99,7 +99,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
                                                 SyntaxKind.NullLiteralExpression)))),
                                 Block(ChangingInvoke())), Assign(), ..ChangedInvoke()])),
 
-            SyntaxKind.SetAccessorDeclaration => accessor
+            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor
                 .WithSemicolonToken(Token(SyntaxKind.None))
                 .WithBody(Block((StatementSyntax[])[..ChangingInvoke(), Assign(), ..ChangedInvoke()])),
             _ => null

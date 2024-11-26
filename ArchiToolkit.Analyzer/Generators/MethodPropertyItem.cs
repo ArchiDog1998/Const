@@ -22,7 +22,7 @@ public class MethodPropertyItem(
             SyntaxKind.GetAccessorDeclaration => accessor.WithExpressionBody(
                 ArrowExpressionClause(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     IdentifierName(Name.LazyName), IdentifierName("Value")))),
-            SyntaxKind.SetAccessorDeclaration => accessor.WithExpressionBody(
+            SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor.WithExpressionBody(
                 ArrowExpressionClause(InvocationExpression(IdentifierName(Name.SetName)).WithArgumentList(
                     ArgumentList(
                         SingletonSeparatedList(
