@@ -1,4 +1,6 @@
-﻿namespace ArchiToolkit.Test.Const;
+﻿using System.Diagnostics.Contracts;
+
+namespace ArchiToolkit.Test.Const;
 
 public class ComplexTest
 {
@@ -6,7 +8,7 @@ public class ComplexTest
     public int B { get; set; }
     public int C { get; set; }
 
-    [Const]
+    [Pure]
     public int Test()
     {
         var x = 1;

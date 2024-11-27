@@ -102,4 +102,16 @@
     <data name="AttributeTypeDescriptorMessage" xml:space="preserve">
         <value>Please make sure the comparer is EqualityComparer with the right generic type with a 0-arguments constructor.</value>
     </data>
+    <data name="DontInvokeDescriptorTittle" xml:space="preserve">
+        <value>Please don't invoke this method, because it is not a Const method</value>
+    </data>
+    <data name="DontInvokeDescriptorMessage" xml:space="preserve">
+        <value>Please don't invoke the method {0}, because it is not a Const method</value>
+    </data>
+    <data name="PureMemberDescriptorTittle" xml:space="preserve">
+        <value>You can't access data outside of the parameters</value>
+    </data>
+    <data name="PureMemberDescriptorMessage" xml:space="preserve">
+        <value>You can't access data outside of the parameters</value>
+    </data>
 </root>

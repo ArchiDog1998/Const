@@ -132,6 +132,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please don&apos;t invoke the method {0}, because it is not a Const method.
+        /// </summary>
+        internal static string DontInvokeDescriptorMessage {
+            get {
+                return ResourceManager.GetString("DontInvokeDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please don&apos;t invoke this method, because it is not a Const method.
+        /// </summary>
+        internal static string DontInvokeDescriptorTittle {
+            get {
+                return ResourceManager.GetString("DontInvokeDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You cannot modify member &apos;{0}&apos;, because you have set this method to Const.{1}..
         /// </summary>
         internal static string MemberDescriptorMessage {
@@ -308,6 +326,24 @@ namespace ArchiToolkit.Analyzer.Resources {
         internal static string PartialStaticDescriptorTittle {
             get {
                 return ResourceManager.GetString("PartialStaticDescriptorTittle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can&apos;t access data outside of the parameters.
+        /// </summary>
+        internal static string PureMemberDescriptorMessage {
+            get {
+                return ResourceManager.GetString("PureMemberDescriptorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You can&apos;t access data outside of the parameters.
+        /// </summary>
+        internal static string PureMemberDescriptorTittle {
+            get {
+                return ResourceManager.GetString("PureMemberDescriptorTittle", resourceCulture);
             }
         }
     }

@@ -37,6 +37,8 @@ public static class DiagnosticExtensions
     [
         ParameterDescriptor, MemberDescriptor, MethodDescriptor,
         ParameterInvokeDescriptor, MemberInvokeDescriptor,
+        DontInvokeWarningDescriptor, DontInvokeErrorDescriptor,
+        PureMemberDescriptor,
         CantFindDescriptor,
 #if DEBUG
         DebugMessageDescriptor,
@@ -90,6 +92,21 @@ public static class DiagnosticExtensions
     private static readonly DiagnosticDescriptor MemberInvokeDescriptor = CreateUsageErrorDescriptor("AC1005",
         nameof(DiagnosticStrings.MemberInvokeDescriptorTittle), nameof(DiagnosticStrings.MemberInvokeDescriptorMessage));
 
+    private static readonly DiagnosticDescriptor DontInvokeWarningDescriptor = CreateUsageErrorDescriptor("AC1006",
+        nameof(DiagnosticStrings.DontInvokeDescriptorTittle), nameof(DiagnosticStrings.DontInvokeDescriptorMessage), DiagnosticSeverity.Warning);
+    
+    private static readonly DiagnosticDescriptor DontInvokeErrorDescriptor = CreateUsageErrorDescriptor("AC1007",
+        nameof(DiagnosticStrings.DontInvokeDescriptorTittle), nameof(DiagnosticStrings.DontInvokeDescriptorMessage));
+    
+    private static readonly DiagnosticDescriptor PureMemberDescriptor = CreateUsageErrorDescriptor("AC1008",
+        nameof(DiagnosticStrings.PureMemberDescriptorTittle), nameof(DiagnosticStrings.PureMemberDescriptorMessage));
+
+    public static void ReportPureMember(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
+        => ReportDescriptor(context, PureMemberDescriptor, syntaxNode);
+    
+    public static void ReportPureInvoke(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode, bool error)
+        => ReportDescriptor(context, error ? DontInvokeErrorDescriptor : DontInvokeWarningDescriptor, syntaxNode);
+    
     public static void ReportAttributeType(this SyntaxNodeAnalysisContext context, SyntaxNode syntaxNode)
         => ReportDescriptor(context, AttributeTypeDescriptor, syntaxNode);
     

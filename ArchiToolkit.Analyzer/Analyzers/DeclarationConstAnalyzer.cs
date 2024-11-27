@@ -9,7 +9,9 @@ namespace ArchiToolkit.Analyzer.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 {
-    private const string AttributeName = "ArchiToolkit.ConstAttribute";
+    private const string
+        ConstAttributeName = "ArchiToolkit.ConstAttribute",
+        PureAttributeName = "System.Diagnostics.Contracts.PureAttribute";
 
     public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         DiagnosticExtensions.ConstDescriptors;
@@ -38,48 +40,40 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         if (model.GetDeclaredSymbol(context.Node) is not IMethodSymbol symbol) return;
 
         var type = GetConstTypeAttribute(symbol);
+
         CheckMember(context, symbol, body, type);
         CheckMethod(context, body, type);
-        
+
         CheckParameter(context, symbol, body);
+        CheckPure(context, symbol, body, model, type);
     }
 
-    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol)
+    private static void CheckPure(SyntaxNodeAnalysisContext context, IMethodSymbol methodSymbol, SyntaxNode body, SemanticModel model,
+        ConstType type)
     {
-        ConstType result = 0;
-
-        var methodSymbol = symbol;
-        do
+        if (!type.HasFlag(ConstType.Pure)) return;
+        var symbols = body.GetChildren<SimpleNameSyntax>()
+            .Select(name => (name, model.GetSymbolInfo(name).Symbol));
+        foreach (var (name, calledSymbol) in symbols)
         {
-            result |= GetConstTypeAttributeRaw(methodSymbol);
-            methodSymbol = methodSymbol.OverriddenMethod;
-        } while (methodSymbol is not null);
+            switch (calledSymbol)
+            {
+                case IMethodSymbol calledMethodSymbol when GetConstTypeAttribute(calledMethodSymbol) is not ConstType.Pure:
+                    //TODO: it is better to check if the assembly has the dependency about this assembly.
+                    context.ReportPureInvoke(name, methodSymbol.ContainingAssembly.Equals(calledMethodSymbol.ContainingAssembly,
+                        SymbolEqualityComparer.Default));
+                    break;
 
-        return result;
-    }
-
-    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol, int index)
-    {
-        ConstType result = 0;
-
-        var methodSymbol = symbol;
-        do
-        {
-            result |= GetConstTypeAttributeRaw(methodSymbol.Parameters[index]);
-            methodSymbol = methodSymbol.OverriddenMethod;
-        } while (methodSymbol is not null);
-
-        return result;
-    }
-
-    private static ConstType GetConstTypeAttributeRaw(ISymbol? symbol)
-    {
-        var attr = symbol?.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is AttributeName);
-        if (attr == null) return 0;
-        var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
-        var by = (ConstType?)type.Value ?? ConstType.All;
-        return by;
+                case IPropertySymbol:
+                case IFieldSymbol { IsConst: false }:
+                    if (name.Parent is not MemberAccessExpressionSyntax memberGetter) break;
+                    var firstName = GetFirstAccessorName(context, memberGetter, true, out _, out _);
+                    if (firstName is null) break;
+                    if (model.GetSymbolInfo(firstName).Symbol is IParameterSymbol) break;
+                    context.ReportPureMember(firstName);
+                    break;
+            }
+        }
     }
 
     private static SyntaxNode? GetMethodBody(SyntaxNode? method) => method switch
@@ -259,7 +253,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                         IMethodSymbol methodSymbol)
                 {
                     methodName = methodSymbol.Name;
-                    //TODO: it is better to check if the assembly has the dependency about this assembly.
+                    //TODO: it is better to check if the assembly has the dependency about this assembly. And the better way to warning for the things about how to 
                     if (!methodSymbol.ContainingAssembly.Equals(nameSymbol.ContainingAssembly,
                             SymbolEqualityComparer.Default))
                     {
@@ -321,13 +315,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         {
             var name = GetFirstAccessorNameInvoke(context, statement, true, out _);
             if (name is null) continue;
-            
+
             if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol)
                 continue;
-            
+
             if (context.SemanticModel.GetSymbolInfo(name).Symbol is not IMethodSymbol)
                 continue;
-            
+
             if (!CantInvokeMethod(methodSymbol)) continue;
             context.ReportMethod(name, type);
         }
@@ -395,11 +389,11 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     {
         deep = 0;
         isThisOrBase = false;
-        
+
         while (true)
         {
             deep++;
-            
+
             switch (exp)
             {
                 case MemberAccessExpressionSyntax member:
@@ -420,27 +414,27 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     }
 
                     break;
-                
+
                 case SimpleNameSyntax name:
                     return name;
-                
+
                 case AwaitExpressionSyntax await:
                     exp = await.Expression;
                     break;
-                
+
                 case InvocationExpressionSyntax invocation:
-                    exp =invocation.Expression;
+                    exp = invocation.Expression;
                     break;
-                
+
                 case ParenthesizedExpressionSyntax parenthesized:
                     exp = parenthesized.Expression;
                     break;
-                
+
                 case BinaryExpressionSyntax:
                 case BaseObjectCreationExpressionSyntax:
                 case AnonymousObjectCreationExpressionSyntax:
                     return null;
-                
+
                 default:
                     context.ReportCantFind(exp);
                     return null;
@@ -449,4 +443,38 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     }
 
     private static string GetSyntaxName(SimpleNameSyntax name) => name.Identifier.ToFullString().Trim();
+
+    private static ConstType GetConstTypeAttributeRaw(ISymbol? symbol)
+    {
+        var attrs = symbol?.GetAttributes();
+
+        if (attrs?.Any(a => a.AttributeClass?.GetFullMetadataName() is PureAttributeName) ?? false)
+            return ConstType.Pure;
+
+        var attr = attrs?.FirstOrDefault(a => a.AttributeClass?.GetFullMetadataName() is ConstAttributeName);
+        if (attr == null) return 0;
+        var type = attr.NamedArguments.FirstOrDefault(p => p.Key == "Type").Value;
+        var by = (ConstType?)type.Value ?? ConstType.AllConst;
+        return by;
+    }
+
+    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol)
+        => GetConstTypeAttribute(symbol, s => s);
+
+    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol, int index)
+        => GetConstTypeAttribute(symbol, s => s.Parameters[index]);
+
+    private static ConstType GetConstTypeAttribute(IMethodSymbol symbol, Func<IMethodSymbol, ISymbol> getSymbol)
+    {
+        ConstType result = 0;
+
+        var methodSymbol = symbol;
+        do
+        {
+            result |= GetConstTypeAttributeRaw(getSymbol(methodSymbol));
+            methodSymbol = methodSymbol.OverriddenMethod;
+        } while (methodSymbol is not null);
+
+        return result;
+    }
 }
