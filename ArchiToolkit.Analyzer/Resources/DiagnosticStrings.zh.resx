@@ -17,22 +17,100 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PartialPropertyFixerTittle" xml:space="preserve">
-        <value>Add partial keyword for the property '{0}'</value>
+  <data name="ParameterDescriptorTittle" xml:space="preserve">
+        <value>请不要修改这个参数</value>
     </data>
-  <data name="PartialPropertyFixerEquivalenceKey" xml:space="preserve">
-        <value>Add partial keyword</value>
+  <data name="ParameterDescriptorMessage" xml:space="preserve">
+        <value>你不能修改参数{0}，因为你已经将他设置为Const.{1}了。</value>
     </data>
-  <data name="PartialMethodFixerTittle" xml:space="preserve">
-        <value>Add partial get method for the property '{0}'</value>
+  <data name="MethodDescriptorTittle" xml:space="preserve">
+        <value>请不要调用这个方法</value>
     </data>
-  <data name="PartialMethodFixerEquivalenceKey" xml:space="preserve">
-        <value>Add partial get method</value>
+  <data name="MethodDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{0}，因为你已经将这个方法设置为Const.{1}了。</value>
     </data>
-  <data name="PartialSetMethodFixerTittle" xml:space="preserve">
-        <value>Add partial set method for the property '{0}'</value>
+  <data name="MemberDescriptorTittle" xml:space="preserve">
+        <value>请不要修改这个成员</value>
     </data>
-  <data name="PartialSetMethodFixerEquivalenceKey" xml:space="preserve">
-        <value>Add partial set method</value>
+  <data name="MemberDescriptorMessage" xml:space="preserve">
+        <value>你不能修改成员{0}，因为你已经将这个方法设置为Const.{1}了。</value>
+    </data>
+  <data name="CantFindDescriptorTittle" xml:space="preserve">
+        <value>它的名字呢？</value>
+    </data>
+  <data name="CantFindDescriptorMessage" xml:space="preserve">
+        <value>如何获得这个表达式的名字呢？</value>
+    </data>
+  <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
+        <value>请不要调用这个参数的这个方法</value>
+    </data>
+  <data name="ParameterInvokeDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{2}，因为你已经将参数{0}设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
+    </data>
+  <data name="MemberInvokeDescriptorTittle" xml:space="preserve">
+        <value>请不要调用这个成员的这个方法</value>
+    </data>
+  <data name="MemberInvokeDescriptorMessage" xml:space="preserve">
+        <value>你不能调用函数{2}，因为你已经将这个方法设置为Const.{1}了。你可以尝试修改方法{2}的Const Attribute。</value>
+    </data>
+  <data name="PartialPropertyDecriptorMesage" xml:space="preserve">
+        <value>Please add the 'partial' keyword to the property '{0}'</value>
+    </data>
+  <data name="PartialPropertyDescriptorTittle" xml:space="preserve">
+        <value>请添加partial关键字到属性中</value>
+    </data>
+  <data name="BodyPropertyDecriptorTittle" xml:space="preserve">
+        <value>Don't add body to the property</value>
+    </data>
+  <data name="BodyPropertyDescriptorMessage" xml:space="preserve">
+        <value>Don't add body to this property </value>
+    </data>
+  <data name="AccessorTypePropertyDescriptorTittle" xml:space="preserve">
+        <value>You can only add the accessor get or set</value>
+    </data>
+  <data name="AccessorTypePropertyDescriptorMessage" xml:space="preserve">
+        <value>You can only add the accessor get or set</value>
+    </data>
+  <data name="PartialMethodDescriptorTittle" xml:space="preserve">
+        <value>Please add partial method for getting this property</value>
+    </data>
+  <data name="PartialMethodDescriptorMessage" xml:space="preserve">
+        <value>Please add partial method for getting the property '{0}'</value>
+    </data>
+  <data name="PartialMethodCallSelfDescriptorTittle" xml:space="preserve">
+        <value>Don't call this property in this method</value>
+    </data>
+  <data name="PartialMethodCallSelfDescriptorMessage" xml:space="preserve">
+        <value>Don't call this property in this method</value>
+    </data>
+  <data name="PartialStaticDescriptorTittle" xml:space="preserve">
+        <value>Don't add the static to this property when you add the attribute Prop.</value>
+    </data>
+  <data name="PartialStaticDescriptorMessage" xml:space="preserve">
+        <value>Don't add the static to this property when you add the attribute Prop.</value>
+    </data>
+  <data name="PartialSetMethodDescriptorTittle" xml:space="preserve">
+        <value>Please add partial method for setting this property</value>
+    </data>
+  <data name="PartialSetMethodDescriptorMessage" xml:space="preserve">
+        <value>Please add partial method for setting the property '{0}'</value>
+    </data>
+  <data name="AttributeTypeDescriptorTittle" xml:space="preserve">
+        <value>Wrong Comparer Type</value>
+    </data>
+  <data name="AttributeTypeDescriptorMessage" xml:space="preserve">
+        <value>Please make sure the comparer is EqualityComparer with the right generic type with a 0-arguments constructor.</value>
+    </data>
+  <data name="DontInvokeDescriptorTittle" xml:space="preserve">
+        <value>Please don't invoke this method, because it is not a Const method</value>
+    </data>
+  <data name="DontInvokeDescriptorMessage" xml:space="preserve">
+        <value>Please don't invoke the method {0}, because it is not a Const method</value>
+    </data>
+  <data name="PureMemberDescriptorTittle" xml:space="preserve">
+        <value>You can't access data outside of the parameters</value>
+    </data>
+  <data name="PureMemberDescriptorMessage" xml:space="preserve">
+        <value>You can't access data outside of the parameters</value>
     </data>
 </root>
