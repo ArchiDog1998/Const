@@ -251,7 +251,7 @@ public class MethodPropertyItem(
         }
     }
 
-    private static IReadOnlyList<ExpressionSyntax> GetExpressions(MethodDeclarationSyntax method,
+    private  IReadOnlyList<ExpressionSyntax> GetExpressions(MethodDeclarationSyntax method,
         out InvocationExpressionSyntax[] invocations)
     {
         var body = method.Body as SyntaxNode ?? method.ExpressionBody;
@@ -262,18 +262,19 @@ public class MethodPropertyItem(
         }
 
         invocations = body.GetChildren<InvocationExpressionSyntax>().ToArray();
-
-        //TODO: maybe I lost sth. Please NO.
-        var baseMembers = body.GetChildren<AssignmentExpressionSyntax>().OfType<ExpressionSyntax>()
-            .Concat(body.GetChildren<BinaryExpressionSyntax>())
-            .Concat(body.GetChildren<ObjectCreationExpressionSyntax>())
-            .Concat(invocations)
-            .SelectMany(GetMemberAccessFirst);
-
-        var locals = body.GetChildren<VariableDeclaratorSyntax>().Select(v => v.Initializer?.Value)
-            .OfType<ExpressionSyntax>().SelectMany(GetMemberAccessFirst);
-
-        return [..baseMembers, ..locals];
+        return [..body.GetChildren<MemberAccessExpressionSyntax>()
+            .Where(m => model.GetSymbolInfo(m).Symbol is IFieldSymbol or IPropertySymbol
+                && m.Parent is not MemberAccessExpressionSyntax)
+            .OfType<ExpressionSyntax>()
+            .Concat(body.GetChildren<SimpleNameSyntax>()
+                .Where(n =>
+                {
+                    var nameSymbol = model.GetSymbolInfo(n).Symbol;
+                    return nameSymbol is IFieldSymbol or IPropertySymbol
+                        && n.Parent is not MemberAccessExpressionSyntax
+                        && nameSymbol.ContainingType.Equals(Symbol.ContainingSymbol, SymbolEqualityComparer.Default);
+                }))
+            .SelectMany(GetMemberAccessFirst)];
 
         static IReadOnlyList<ExpressionSyntax> GetMemberAccessFirst(ExpressionSyntax expression)
         {
