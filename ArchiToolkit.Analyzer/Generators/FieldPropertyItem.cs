@@ -9,14 +9,14 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
     : BasePropertyDependencyItem(node, symbol)
 {
     private const string ChangePrefix = PropDpName.Prefix + "On";
-    
+
     public override IReadOnlyList<MemberDeclarationSyntax> GetMembers()
         => [.. base.GetMembers(), ..PartialMethods()];
 
     private IEnumerable<MethodDeclarationSyntax> PartialMethods()
     {
         return [CreatePartialMethod(Name.NameChanging), CreatePartialMethod(Name.NameChanged)];
-        
+
         MethodDeclarationSyntax CreatePartialMethod(string methodName) => MethodDeclaration(
                 PredefinedType(
                     Token(SyntaxKind.VoidKeyword)),
@@ -34,7 +34,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
             .WithSemicolonToken(
                 Token(SyntaxKind.SemicolonToken));
     }
-        
+
     protected override AccessorDeclarationSyntax? UpdateAccess(AccessorDeclarationSyntax accessor)
     {
         return accessor.Kind() switch
@@ -42,19 +42,73 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
             SyntaxKind.GetAccessorDeclaration => accessor,
             SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor
                 .WithSemicolonToken(Token(SyntaxKind.None))
-                .WithBody(Block((StatementSyntax[])[..ChangingInvoke(), Assign(), ..ChangedInvoke()])),
+                .WithBody(Block((StatementSyntax[])
+                    [..ChangingInvoke(), Assign(), ..ChangedInvoke(), ..DefineInvoke()])),
             _ => null
         };
     }
-    
+
+    private IReadOnlyList<StatementSyntax> DefineInvoke()
+    {
+        if (!IsCollectionChangedSymbol(Symbol)) return [];
+        return
+        [
+            ReturnStatement(),
+            LocalFunctionStatement(
+                    PredefinedType(
+                        Token(SyntaxKind.VoidKeyword)),
+                    Identifier(CollectionChangedName))
+                .WithParameterList(
+                    ParameterList(
+                        SeparatedList<ParameterSyntax>(
+                            new SyntaxNodeOrToken[]
+                            {
+                                Parameter(
+                                        Identifier("sender"))
+                                    .WithType(
+                                        NullableType(PredefinedType(
+                                            Token(SyntaxKind.ObjectKeyword)))),
+                                Token(SyntaxKind.CommaToken),
+                                Parameter(
+                                        Identifier("e"))
+                                    .WithType(
+                                        IdentifierName(
+                                            "global::System.Collections.Specialized.NotifyCollectionChangedEventArgs"))
+                            })))
+                .WithBody(
+                    Block(ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanged),
+                        InvocationExpression(MemberBindingExpression(IdentifierName("Invoke")))))))
+        ];
+    }
+
+
     private IReadOnlyList<StatementSyntax> ChangedInvoke()
     {
         var changed = ExpressionStatement(ConditionalAccessExpression(IdentifierName(Name.NameChanged),
             InvocationExpression(MemberBindingExpression(IdentifierName("Invoke")))));
 
         var changedMethod = CreateInvocationMethod(Name.NameChanged);
-        
-        return [changed, changedMethod, InvokeEvent("PropertyChanged")];
+
+        IReadOnlyList<StatementSyntax> result = [changed, changedMethod, InvokeEvent("PropertyChanged")];
+        if (IsCollectionChangedSymbol(Symbol))
+        {
+            return
+            [
+                ..result,
+                ExpressionStatement(
+                    AssignmentExpression(
+                        SyntaxKind.SubtractAssignmentExpression,
+                        IdentifierName("field.CollectionChanged"),
+                        IdentifierName(CollectionChangedName))),
+                ExpressionStatement(
+                    AssignmentExpression(
+                        SyntaxKind.AddAssignmentExpression,
+                        IdentifierName("field.CollectionChanged"),
+                        IdentifierName(CollectionChangedName)))
+            ];
+        }
+
+        return result;
     }
 
     internal static INamedTypeSymbol? GetTypeArgument(IPropertySymbol symbol)
@@ -70,7 +124,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
         var findName = $"System.Collections.Generic.IEqualityComparer<{symbol.Type.GetFullMetadataName()}>";
         return type.AllInterfaces.Any(i => i.GetFullMetadataName() == findName);
     }
-    
+
     private IReadOnlyList<StatementSyntax> ChangingInvoke()
     {
         ExpressionSyntax expression = MemberAccessExpression(
@@ -92,7 +146,7 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
                 .WithArgumentList(
                     ArgumentList());
         }
-        
+
         var ifReturn = IfStatement(
             InvocationExpression(
                     MemberAccessExpression(
@@ -121,7 +175,21 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
 
         var changingMethod = CreateInvocationMethod(Name.NameChanging);
 
-        return [ifReturn, changing, changingMethod, InvokeEvent("PropertyChanging")];
+        IReadOnlyList<StatementSyntax> result = [ifReturn, changing, changingMethod, InvokeEvent("PropertyChanging")];
+        if (IsCollectionChangedSymbol(Symbol))
+        {
+            return
+            [
+                ..result,
+                ExpressionStatement(
+                    AssignmentExpression(
+                        SyntaxKind.SubtractAssignmentExpression,
+                        IdentifierName("field.CollectionChanged"),
+                        IdentifierName(CollectionChangedName)))
+            ];
+        }
+
+        return result;
     }
 
     private static ExpressionStatementSyntax CreateInvocationMethod(string methodName) => ExpressionStatement(
@@ -183,5 +251,14 @@ public class FieldPropertyItem(PropertyDeclarationSyntax node, IPropertySymbol s
             IdentifierName(
                 Identifier(TriviaList(), SyntaxKind.FieldKeyword, "field", "field", TriviaList())),
             IdentifierName("value")));
+    }
+
+    internal const string CollectionChangedName = PropDpName.Prefix + "CollectionChanged";
+
+
+    internal static bool IsCollectionChangedSymbol(IPropertySymbol symbol)
+    {
+        return symbol.Type.AllInterfaces.Any(i =>
+            i.GetFullMetadataName() is "System.Collections.Specialized.INotifyCollectionChanged");
     }
 }

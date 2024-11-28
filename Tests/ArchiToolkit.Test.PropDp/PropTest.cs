@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.ObjectModel;
+using System.Numerics;
 
 namespace ArchiToolkit.Test.PropDp;
 
@@ -33,6 +34,11 @@ class MyComparer() : IEqualityComparer<int>
 
 internal partial class PropTest
 {
+    [FieldDp] public partial ObservableCollection<int> Collection { get; set; }
+    [PropDp] public partial ObservableCollection<int> Collection2 { get; }
+
+    private partial ObservableCollection<int> _GetCollection2() => Collection;
+
     [FieldDp] public partial SubTest Test { get; set; }
 
     [PropDp] public partial SubTest TestRef { get; set; }

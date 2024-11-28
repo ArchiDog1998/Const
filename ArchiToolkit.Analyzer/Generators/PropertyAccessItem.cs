@@ -12,7 +12,8 @@ public class PropertyAccessItemComparer : IEqualityComparer<PropertyAccessItem>
     {
         if (x.ValidPropertySymbols.Count != y.ValidPropertySymbols.Count) return false;
 
-        return !x.ValidPropertySymbols.Where((t, i) => !t.Equals(y.ValidPropertySymbols[i], SymbolEqualityComparer.Default))
+        return !x.ValidPropertySymbols
+            .Where((t, i) => !t.Equals(y.ValidPropertySymbols[i], SymbolEqualityComparer.Default))
             .Any();
     }
 
@@ -28,7 +29,7 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
 
     public ExpressionSyntax Expression { get; } = expression;
 
-    public string InitName => "Init_" + string.Join("_", ValidPropertySymbols.Select(i => i.Name.ToString()));
+    private string InitName => "Init_" + string.Join("_", ValidPropertySymbols.Select(i => i.Name.ToString()));
 
     public IReadOnlyList<IPropertySymbol> PropertySymbols => _list.Value;
 
@@ -48,7 +49,8 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
     public bool HasSymbol(IPropertySymbol symbol)
         => PropertySymbols.Any(s => s.Equals(symbol, SymbolEqualityComparer.Default));
 
-    public IReadOnlyList<IPropertySymbol> ValidPropertySymbols => PropertySymbols.TakeWhile(IsPropDpProperty).ToImmutableArray();
+    public IReadOnlyList<IPropertySymbol> ValidPropertySymbols =>
+        PropertySymbols.TakeWhile(IsPropDpProperty).ToImmutableArray();
 
     public StatementSyntax InvokeInit() => ExpressionStatement(InvocationExpression(IdentifierName(InitName)));
 
@@ -78,33 +80,38 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
         for (; i < symbols.Length; i++)
         {
             IEnumerable<StatementSyntax> changingStates = [];
-            IEnumerable<StatementSyntax> changedStates = [ExpressionStatement(
-                InvocationExpression(
-                    IdentifierName(clearName)))];
+            IEnumerable<StatementSyntax> changedStates =
+            [
+                ExpressionStatement(
+                    InvocationExpression(
+                        IdentifierName(clearName)))
+            ];
 
             var index = i + 1;
             if (index < symbols.Length)
             {
                 var symbol = symbols[index];
                 var symbolName = new PropDpName(symbol.Name);
-                
-                changingStates = changingStates.Append(NullReturn(addedSymbols)).Concat(RemoveStatements(addedSymbols, symbolName, index));
-                changedStates = changedStates.Append(NullReturn(addedSymbols)).Concat(AddStatements(addedSymbols, symbolName, index));
-                
+
+                changingStates = changingStates.Append(NullReturn(addedSymbols))
+                    .Concat(RemoveStatements(addedSymbols, symbolName, index));
+                changedStates = changedStates.Append(NullReturn(addedSymbols))
+                    .Concat(AddStatements(addedSymbols, symbolName, index));
+
                 addedSymbols.Add(symbol);
             }
-            
+
             result = result.Append(LocalFunctionStatement(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
                     Identifier(Changing + i))
                 .WithBody(Block(changingStates)));
-            
+
             result = result.Append(LocalFunctionStatement(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
                     Identifier(Changed + i))
                 .WithBody(Block(changedStates)));
         }
-        
+
         return result;
     }
 
@@ -118,14 +125,25 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
                         SyntaxKind.NullLiteralExpression))),
             ReturnStatement());
     }
-    
+
+
     private static IReadOnlyList<ExpressionStatementSyntax> RemoveStatements(IReadOnlyList<IPropertySymbol> symbols,
         in PropDpName name, int index)
     {
-        var leading = symbols.Aggregate(string.Empty, (current, symbol) => current + symbol.Name + ".");
+        return RemoveStatements(CreateLeading(symbols), name, index);
+    }
 
-        return
+    private static string CreateLeading(IReadOnlyList<IPropertySymbol> symbols)
+        => symbols.Aggregate(string.Empty, (current, symbol) => current + symbol.Name + ".");
+
+    private static IReadOnlyList<ExpressionStatementSyntax> RemoveStatements(string leading,
+        in PropDpName name, int index)
+    {
+        return 
         [
+            ExpressionStatement(
+                InvocationExpression(
+                    IdentifierName(Changing + index))),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.SubtractAssignmentExpression,
@@ -136,29 +154,17 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
                     SyntaxKind.SubtractAssignmentExpression,
                     IdentifierName(leading + name.NameChanged),
                     IdentifierName(Changed + index))),
-            ExpressionStatement(
-                InvocationExpression(
-                    IdentifierName(Changing + index)))
         ];
     }
 
     private static IReadOnlyList<ExpressionStatementSyntax> AddStatements(IReadOnlyList<IPropertySymbol> symbols,
         in PropDpName name, int index)
     {
-        var leading = symbols.Aggregate(string.Empty, (current, symbol) => current + symbol.Name + ".");
+        var leading = CreateLeading(symbols);
 
         return
         [
-            ExpressionStatement(
-                AssignmentExpression(
-                    SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.NameChanging),
-                    IdentifierName(Changing + index))),
-            ExpressionStatement(
-                AssignmentExpression(
-                    SyntaxKind.SubtractAssignmentExpression,
-                    IdentifierName(leading + name.NameChanged),
-                    IdentifierName(Changed + index))),
+            ..RemoveStatements(leading, name, index),
             ExpressionStatement(
                 AssignmentExpression(
                     SyntaxKind.AddAssignmentExpression,
@@ -169,17 +175,16 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
                     SyntaxKind.AddAssignmentExpression,
                     IdentifierName(leading + name.NameChanged),
                     IdentifierName(Changed + index))),
-            ExpressionStatement(
-                InvocationExpression(
-                    IdentifierName(Changed + index)))
         ];
     }
+
 
     private const string Changing = "Changing", Changed = "Changed";
 
     private static bool IsPropDpProperty(IPropertySymbol symbol)
     {
         return symbol.GetAttributes().Any(a =>
-            a.AttributeClass?.GetFullMetadataName() is PropertyDependencyAnalyzer.AttributeName or FieldDependencyAnalyzer.AttributeName);
+            a.AttributeClass?.GetFullMetadataName() is PropertyDependencyAnalyzer.AttributeName
+                or FieldDependencyAnalyzer.AttributeName);
     }
 }
