@@ -33,7 +33,7 @@
         <value>它的名字呢？</value>
     </data>
     <data name="CantFindDescriptorMessage" xml:space="preserve">
-        <value>如何获得这个表达式的名字呢？</value>
+        <value>如何获得这个表达式{0}的名字呢？</value>
     </data>
     <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
         <value>请不要调用这个参数的这个方法</value>

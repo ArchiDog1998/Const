@@ -5,6 +5,8 @@ namespace ArchiToolkit.Test.PropDp;
 
 internal partial class SubTest
 {
+    public event Action? TestEvent;
+    
     [FieldDp] public partial float X { get; set; }
 
     [FieldDp(Comparer = typeof(MyComparer))]
@@ -14,6 +16,7 @@ internal partial class SubTest
 
     private partial Vector2 _GetTest()
     {
+        TestEvent?.Invoke();
         var result = new Vector2(X, Y);
         return result;
     }

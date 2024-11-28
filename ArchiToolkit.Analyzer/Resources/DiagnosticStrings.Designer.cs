@@ -114,7 +114,7 @@ namespace ArchiToolkit.Analyzer.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to How to access this identifier name in Expression?.
+        ///   Looks up a localized string similar to How to access this identifier name in {0}?.
         /// </summary>
         internal static string CantFindDescriptorMessage {
             get {

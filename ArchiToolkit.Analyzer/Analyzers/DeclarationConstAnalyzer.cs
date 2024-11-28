@@ -408,7 +408,13 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
             switch (exp)
             {
-                                
+                case MemberBindingExpressionSyntax memberBindingExpression:
+                    if (memberBindingExpression.Parent is ExpressionSyntax expression)
+                    {
+                        exp = expression;
+                    }
+                    break;
+                
                 case ConditionalAccessExpressionSyntax conditional:
                     exp = conditional.Expression;
                     break;

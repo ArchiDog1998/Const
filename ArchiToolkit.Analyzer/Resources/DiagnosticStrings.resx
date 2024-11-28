@@ -40,7 +40,7 @@
         <value>Where is its name?</value>
     </data>
     <data name="CantFindDescriptorMessage" xml:space="preserve">
-        <value>How to access this identifier name in Expression?</value>
+        <value>How to access this identifier name in {0}?</value>
     </data>
     <data name="ParameterInvokeDescriptorTittle" xml:space="preserve">
         <value>Don't invoke this parameter's method</value>
