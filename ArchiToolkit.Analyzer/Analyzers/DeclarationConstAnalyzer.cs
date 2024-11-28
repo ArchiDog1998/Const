@@ -396,10 +396,25 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
             switch (exp)
             {
+                                
+                case ConditionalAccessExpressionSyntax conditional:
+                    exp = conditional.Expression;
+                    break;
                 case MemberAccessExpressionSyntax member:
                     exp = member.Expression;
                     break;
+                case AwaitExpressionSyntax await:
+                    exp = await.Expression;
+                    break;
 
+                case InvocationExpressionSyntax invocation:
+                    exp = invocation.Expression;
+                    break;
+
+                case ParenthesizedExpressionSyntax parenthesized:
+                    exp = parenthesized.Expression;
+                    break;
+                
                 case ThisExpressionSyntax:
                 case BaseExpressionSyntax:
                     if (containThis && exp.Parent is MemberAccessExpressionSyntax m)
@@ -417,18 +432,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
                 case SimpleNameSyntax name:
                     return name;
-
-                case AwaitExpressionSyntax await:
-                    exp = await.Expression;
-                    break;
-
-                case InvocationExpressionSyntax invocation:
-                    exp = invocation.Expression;
-                    break;
-
-                case ParenthesizedExpressionSyntax parenthesized:
-                    exp = parenthesized.Expression;
-                    break;
 
                 case BinaryExpressionSyntax:
                 case BaseObjectCreationExpressionSyntax:
