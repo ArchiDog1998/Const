@@ -45,10 +45,14 @@ internal partial class PropTest
 
     partial void _SetTestRef(SubTest value)
     {
-        throw new NotImplementedException();
+       
     }
 
-    private partial SubTest _GetTestRef() => new();
+    private partial SubTest _GetTestRef() 
+    {
+        Test.GetHashCode();
+        return new();
+    }
 
     [PropDp] public partial int Add { get; set; }
 

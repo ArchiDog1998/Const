@@ -279,8 +279,8 @@ public class MethodPropertyItem(
                 {
                     var nameSymbol = model.GetSymbolInfo(n).Symbol;
                     return nameSymbol is IFieldSymbol or IPropertySymbol
-                        && n.Parent is not MemberAccessExpressionSyntax
-                        && nameSymbol.ContainingType.Equals(Symbol.ContainingSymbol, SymbolEqualityComparer.Default);
+                        && (n.Parent is not MemberAccessExpressionSyntax member || member.Name != n)
+                        && nameSymbol.ContainingType.Equals(Symbol.ContainingType, SymbolEqualityComparer.Default);
                 }))
             .SelectMany(GetMemberAccessFirst)];
 
