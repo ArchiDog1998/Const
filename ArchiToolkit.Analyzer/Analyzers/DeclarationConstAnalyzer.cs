@@ -67,10 +67,12 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case IPropertySymbol:
                 case IFieldSymbol { IsConst: false }:
                     if (name.Parent is not MemberAccessExpressionSyntax memberGetter) break;
-                    var firstName = GetFirstAccessorName(context, memberGetter, true, out _, out _);
-                    if (firstName is null) break;
-                    if (model.GetSymbolInfo(firstName).Symbol is IParameterSymbol) break;
-                    context.ReportPureMember(firstName);
+                    foreach (var item in GetFirstAccessorName(context, memberGetter, true))
+                    {
+                        var firstName = item.Name;
+                        if (model.GetSymbolInfo(firstName).Symbol is IParameterSymbol) continue;
+                        context.ReportPureMember(firstName);
+                    }
                     break;
             }
         }
@@ -239,50 +241,53 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
             void CheckExpression(ExpressionSyntax expression, T statement)
             {
-                var name = GetFirstAccessorName(context, expression, containThis, out var deep,
-                    out var isThis);
-                if (name is null) return;
-
-                var nameSymbol = context.SemanticModel.GetSymbolInfo(name).Symbol;
-                if (nameSymbol is not IPropertySymbol and not IFieldSymbol and not IParameterSymbol) return;
-
-                int[] deeps = [deep];
-                var methodName = string.Empty;
-                if (statement is InvocationExpressionSyntax invocation
-                    && context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol is
-                        IMethodSymbol methodSymbol)
+                foreach (var item in GetFirstAccessorName(context, expression, containThis))
                 {
-                    methodName = methodSymbol.Name;
-                    //TODO: it is better to check if the assembly has the dependency about this assembly. And the better way to warning for the things about how to 
-                    if (!methodSymbol.ContainingAssembly.Equals(nameSymbol.ContainingAssembly,
-                            SymbolEqualityComparer.Default))
+                    var name = item.Name;
+                    var deep = item.Deep;
+                    var isThis = item.IsThisOrBase;
+                    
+                    var nameSymbol = context.SemanticModel.GetSymbolInfo(name).Symbol;
+                    if (nameSymbol is not IPropertySymbol and not IFieldSymbol and not IParameterSymbol) return;
+
+                    int[] deeps = [deep];
+                    var methodName = string.Empty;
+                    if (statement is InvocationExpressionSyntax invocation
+                        && context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol is
+                            IMethodSymbol methodSymbol)
                     {
-                        // Skip this method. We can't edit it.
-                        return;
+                        methodName = methodSymbol.Name;
+                        //TODO: it is better to check if the assembly has the dependency about this assembly. And the better way to warning for the things about how to 
+                        if (!methodSymbol.ContainingAssembly.Equals(nameSymbol.ContainingAssembly,
+                                SymbolEqualityComparer.Default))
+                        {
+                            // Skip this method. We can't edit it.
+                            return;
+                        }
+
+                        var edition = GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
+
+                        if (edition.Length == 0)
+                        {
+                            //We don't need to error it, it is const always.
+                            return;
+                        }
+
+                        deeps = [..edition.Select(i => i + deep)];
                     }
 
-                    var edition = GetConstTypeAddition(GetConstTypeAttribute(methodSymbol));
+                    var type = deeps.Aggregate<int, ConstType>(0, (current, d) => current | shouldReport(name, d, isThis));
 
-                    if (edition.Length == 0)
+                    if (type is 0) return;
+
+                    if (string.IsNullOrEmpty(methodName))
                     {
-                        //We don't need to error it, it is const always.
-                        return;
+                        reportAction(context, name, type);
                     }
-
-                    deeps = [..edition.Select(i => i + deep)];
-                }
-
-                var type = deeps.Aggregate<int, ConstType>(0, (current, d) => current | shouldReport(name, d, isThis));
-
-                if (type is 0) return;
-
-                if (string.IsNullOrEmpty(methodName))
-                {
-                    reportAction(context, name, type);
-                }
-                else
-                {
-                    reportMethodAction(context, name, type, methodName);
+                    else
+                    {
+                        reportMethodAction(context, name, type, methodName);
+                    }
                 }
             }
 
@@ -313,17 +318,17 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
     {
         foreach (var statement in body.GetChildren<InvocationExpressionSyntax>())
         {
-            var name = GetFirstAccessorNameInvoke(context, statement, true, out _);
-            if (name is null) continue;
+            foreach (var name in GetFirstAccessorNameInvoke(context, statement, true))
+            {
+                if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol)
+                    continue;
 
-            if (context.SemanticModel.GetSymbolInfo(statement.Expression).Symbol is not IMethodSymbol methodSymbol)
-                continue;
+                if (context.SemanticModel.GetSymbolInfo(name.Name).Symbol is not IMethodSymbol)
+                    continue;
 
-            if (context.SemanticModel.GetSymbolInfo(name).Symbol is not IMethodSymbol)
-                continue;
-
-            if (!CantInvokeMethod(methodSymbol)) continue;
-            context.ReportMethod(name, type);
+                if (!CantInvokeMethod(methodSymbol)) continue;
+                context.ReportMethod(name.Name, type);
+            }
         }
 
         return;
@@ -378,17 +383,24 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         return allSymbols.ToArray();
     }
 
-    private static SimpleNameSyntax? GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
-        InvocationExpressionSyntax assignment, bool containThis, out int deep)
+    private static IReadOnlyList<AccessorName> GetFirstAccessorNameInvoke(SyntaxNodeAnalysisContext context,
+        InvocationExpressionSyntax assignment, bool containThis)
     {
-        return GetFirstAccessorName(context, assignment.Expression, containThis, out deep, out _);
+        return GetFirstAccessorName(context, assignment.Expression, containThis);
     }
 
-    private static SimpleNameSyntax? GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
-        bool containThis, out int deep, out bool isThisOrBase)
+    private readonly struct AccessorName(SimpleNameSyntax name, int deep, bool isThisOrBase)
     {
-        deep = 0;
-        isThisOrBase = false;
+        public SimpleNameSyntax Name => name;
+        public int Deep => deep;
+        public bool IsThisOrBase => isThisOrBase;
+    }
+
+    private static IReadOnlyList<AccessorName> GetFirstAccessorName(SyntaxNodeAnalysisContext context, ExpressionSyntax exp,
+        bool containThis)
+    {
+        var deep = 0;
+        var isThisOrBase = false;
 
         while (true)
         {
@@ -406,14 +418,17 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case AwaitExpressionSyntax await:
                     exp = await.Expression;
                     break;
-
                 case InvocationExpressionSyntax invocation:
                     exp = invocation.Expression;
                     break;
-
                 case ParenthesizedExpressionSyntax parenthesized:
                     exp = parenthesized.Expression;
                     break;
+                case TupleExpressionSyntax tuple:
+                    return
+                    [
+                        ..tuple.Arguments.SelectMany(a => GetFirstAccessorName(context, a.Expression, containThis))
+                    ];
                 
                 case ThisExpressionSyntax:
                 case BaseExpressionSyntax:
@@ -425,22 +440,22 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     }
                     else
                     {
-                        return null;
+                        return [];
                     }
 
                     break;
 
                 case SimpleNameSyntax name:
-                    return name;
+                    return [new AccessorName(name, deep, isThisOrBase)];
 
                 case BinaryExpressionSyntax:
                 case BaseObjectCreationExpressionSyntax:
                 case AnonymousObjectCreationExpressionSyntax:
-                    return null;
+                    return [];
 
                 default:
                     context.ReportCantFind(exp);
-                    return null;
+                    return [];
             }
         }
     }
