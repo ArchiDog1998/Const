@@ -93,9 +93,9 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
                 var symbol = symbols[index];
                 var symbolName = new PropDpName(symbol.Name);
 
-                changingStates = changingStates.Append(NullReturn(addedSymbols))
+                changingStates = changingStates.Concat(NullReturn(addedSymbols))
                     .Concat(RemoveStatements(addedSymbols, symbolName, index));
-                changedStates = changedStates.Append(NullReturn(addedSymbols))
+                changedStates = changedStates.Concat(NullReturn(addedSymbols))
                     .Concat(AddStatements(addedSymbols, symbolName, index));
 
                 addedSymbols.Add(symbol);
@@ -115,15 +115,17 @@ public readonly struct PropertyAccessItem(ExpressionSyntax expression, SemanticM
         return result;
     }
 
-    private static IfStatementSyntax NullReturn(IReadOnlyList<IPropertySymbol> symbols)
+    private static IReadOnlyList<IfStatementSyntax> NullReturn(IReadOnlyList<IPropertySymbol> symbols)
     {
-        return IfStatement(
+        if (symbols.LastOrDefault()?.Type.IsReferenceType is false) return [];
+        
+        return [IfStatement(
             IsPatternExpression(
                 IdentifierName(string.Join(".", symbols.Select(i => i.Name))),
                 ConstantPattern(
                     LiteralExpression(
                         SyntaxKind.NullLiteralExpression))),
-            ReturnStatement());
+            ReturnStatement())];
     }
 
 

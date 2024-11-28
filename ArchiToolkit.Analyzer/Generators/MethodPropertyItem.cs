@@ -20,8 +20,16 @@ public class MethodPropertyItem(
         return accessor.Kind() switch
         {
             SyntaxKind.GetAccessorDeclaration => accessor.WithExpressionBody(
-                ArrowExpressionClause(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName(Name.LazyName), IdentifierName("Value")))),
+                ArrowExpressionClause(
+                    BinaryExpression(
+                        SyntaxKind.CoalesceExpression,
+                        ConditionalAccessExpression(
+                            IdentifierName(Name.LazyName),
+                            MemberBindingExpression(
+                                IdentifierName("Value"))),
+                        LiteralExpression(
+                            SyntaxKind.DefaultLiteralExpression,
+                            Token(SyntaxKind.DefaultKeyword))))),
             SyntaxKind.SetAccessorDeclaration or SyntaxKind.InitAccessorDeclaration => accessor.WithExpressionBody(
                 ArrowExpressionClause(InvocationExpression(IdentifierName(Name.SetName)).WithArgumentList(
                     ArgumentList(
