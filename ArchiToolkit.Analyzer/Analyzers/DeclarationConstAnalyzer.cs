@@ -408,13 +408,6 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
             switch (exp)
             {
-                case MemberBindingExpressionSyntax memberBindingExpression:
-                    if (memberBindingExpression.Parent is ExpressionSyntax expression)
-                    {
-                        exp = expression;
-                    }
-                    break;
-                
                 case ConditionalAccessExpressionSyntax conditional:
                     exp = conditional.Expression;
                     break;
@@ -454,6 +447,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case SimpleNameSyntax name:
                     return [new AccessorName(name, deep, isThisOrBase)];
 
+                case MemberBindingExpressionSyntax: //TODO: Shall we do sth with it?
                 case BinaryExpressionSyntax:
                 case BaseObjectCreationExpressionSyntax:
                 case AnonymousObjectCreationExpressionSyntax:
