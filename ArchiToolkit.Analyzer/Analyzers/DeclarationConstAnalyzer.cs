@@ -428,6 +428,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     [
                         ..tuple.Arguments.SelectMany(a => GetFirstAccessorName(context, a.Expression, containThis))
                     ];
+                //
+                // case PrefixUnaryExpressionSyntax prefixUnary:
+                //     exp = prefixUnary.Operand;
+                //     break;
                 
                 case ThisExpressionSyntax:
                 case BaseExpressionSyntax:
@@ -447,6 +451,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case SimpleNameSyntax name:
                     return [new AccessorName(name, deep, isThisOrBase)];
 
+                case LiteralExpressionSyntax:
                 case MemberBindingExpressionSyntax: //TODO: Shall we do sth with it?
                 case BinaryExpressionSyntax:
                 case BaseObjectCreationExpressionSyntax:

@@ -16,6 +16,8 @@ internal partial class SubTest
 
     private partial Vector2 _GetTest()
     {
+        var a = -1;
+        a = -2;
         TestEvent?.Invoke();
         var result = new Vector2(X, Y);
         return result;
