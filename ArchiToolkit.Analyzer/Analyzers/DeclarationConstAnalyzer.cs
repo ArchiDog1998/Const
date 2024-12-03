@@ -428,7 +428,10 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                     [
                         ..tuple.Arguments.SelectMany(a => GetFirstAccessorName(context, a.Expression, containThis))
                     ];
-                //
+                
+                case ElementAccessExpressionSyntax elementAccess: //TODO: arguments?
+                    exp = elementAccess.Expression;
+                    break;
                 // case PrefixUnaryExpressionSyntax prefixUnary:
                 //     exp = prefixUnary.Operand;
                 //     break;
