@@ -454,6 +454,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
                 case SimpleNameSyntax name:
                     return [new AccessorName(name, deep, isThisOrBase)];
 
+                case QueryExpressionSyntax:
                 case LiteralExpressionSyntax:
                 case MemberBindingExpressionSyntax: //TODO: Shall we do sth with it?
                 case BinaryExpressionSyntax:
