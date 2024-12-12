@@ -501,9 +501,17 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         do
         {
             result |= GetConstTypeAttributeRaw(getSymbol(methodSymbol));
-            methodSymbol = methodSymbol.OverriddenMethod;
+            methodSymbol = methodSymbol.OverriddenMethod
+                ?? GetInterfaceImplementation(methodSymbol);
         } while (methodSymbol is not null);
 
         return result;
+    }
+    public static IMethodSymbol? GetInterfaceImplementation(IMethodSymbol method)
+    {
+        var interfaceMethods =
+            method.ContainingType.AllInterfaces.SelectMany(
+                @interface => @interface.GetMembers().OfType<IMethodSymbol>());
+        return interfaceMethods.FirstOrDefault(interfaceMethod => method.ContainingType.FindImplementationForInterfaceMember(interfaceMethod)?.Equals(method, SymbolEqualityComparer.Default) ?? false);
     }
 }
