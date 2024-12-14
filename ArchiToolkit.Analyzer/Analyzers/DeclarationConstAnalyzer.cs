@@ -229,7 +229,7 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
 
         void CheckChildrenSyntax<T>(Func<T, ExpressionSyntax[]> getExpression) where T : SyntaxNode
         {
-            foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax))
+            foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax or InitializerExpressionSyntax))
             {
                 foreach (var expression in getExpression(statement))
                 {
