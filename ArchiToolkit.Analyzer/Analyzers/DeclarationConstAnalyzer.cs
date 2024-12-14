@@ -221,15 +221,26 @@ public class DeclarationConstAnalyzer : DiagnosticAnalyzer
         static IEnumerable<ExpressionSyntax> GetAssignmentExpressionSet(
             AssignmentExpressionSyntax assignmentExpressionSyntax)
         {
-            if (assignmentExpressionSyntax.Right is not AssignmentExpressionSyntax right)
-                return [assignmentExpressionSyntax.Left];
+            var parents = assignmentExpressionSyntax.Parent?.AncestorsAndSelf().ToArray() ?? [];
+            var inFirstInit = parents.OfType<InitializerExpressionSyntax>().Any()
+                              && !parents.OfType<AssignmentExpressionSyntax>().Any();
 
-            return [assignmentExpressionSyntax.Left, ..GetAssignmentExpressionSet(right)];
+            if (inFirstInit) //Skip the init check for the const.
+            {
+                return assignmentExpressionSyntax.Right is not AssignmentExpressionSyntax right ? [] : GetAssignmentExpressionSet(right);
+            }
+            else
+            {
+                if (assignmentExpressionSyntax.Right is not AssignmentExpressionSyntax right)
+                    return [assignmentExpressionSyntax.Left];
+
+                return [assignmentExpressionSyntax.Left, ..GetAssignmentExpressionSet(right)];
+            }
         }
 
         void CheckChildrenSyntax<T>(Func<T, ExpressionSyntax[]> getExpression) where T : SyntaxNode
         {
-            foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax or InitializerExpressionSyntax))
+            foreach (var statement in body.GetChildren<T>(n => n is LocalFunctionStatementSyntax))
             {
                 foreach (var expression in getExpression(statement))
                 {
